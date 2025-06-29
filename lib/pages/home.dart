@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:re_source/pages/library.dart';
 import 'package:re_source/pages/new_resource.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:re_source/widgets/resource_card.dart';
+
+
+const resourceCards = [
+  ResourceCard(height: 120),
+  ResourceCard(height: 170),
+  ResourceCard(height: 140),
+  ResourceCard(height: 130),
+  ResourceCard(height: 100),
+  ResourceCard(height: 120),
+];
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -14,12 +25,13 @@ class Home extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: Center(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(30, 20, 30, 50),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Search Bar
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
                 child: TextField(
@@ -53,7 +65,8 @@ class Home extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
+              // Recent Categories
               Column(
                 children: [
                   Row(
@@ -80,8 +93,7 @@ class Home extends StatelessWidget {
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
                                       const Library(),
-                              transitionDuration:
-                                  Duration.zero, // 👈 No animation
+                              transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
                           ),
@@ -91,11 +103,10 @@ class Home extends StatelessWidget {
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    spacing: 10,
                     children: [
                       Expanded(
                         child: Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             vertical: 10.0,
                             horizontal: 15.0,
                           ),
@@ -103,7 +114,7 @@ class Home extends StatelessWidget {
                             color: Colors.black,
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
-                          child: Center(
+                          child: const Center(
                             child: Text(
                               "Category 1",
                               style: TextStyle(color: Colors.white),
@@ -111,9 +122,10 @@ class Home extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             vertical: 10.0,
                             horizontal: 15.0,
                           ),
@@ -121,7 +133,7 @@ class Home extends StatelessWidget {
                             color: Colors.black,
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
-                          child: Center(
+                          child: const Center(
                             child: Text(
                               "Category 2",
                               style: TextStyle(color: Colors.white),
@@ -129,9 +141,10 @@ class Home extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                             vertical: 10.0,
                             horizontal: 15.0,
                           ),
@@ -139,7 +152,7 @@ class Home extends StatelessWidget {
                             color: Colors.black,
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
-                          child: Center(
+                          child: const Center(
                             child: Text(
                               "Category 3",
                               style: TextStyle(color: Colors.white),
@@ -151,79 +164,57 @@ class Home extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 40),
-              Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Recent Links",
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w500,
-                        ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Recent Links",
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 450,
-                    child: SingleChildScrollView(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              spacing: 10,
-                              children: [
-                                ResourceCard(),
-                                ResourceCard(),
-                                ResourceCard(),
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: 10), // spacing between the columns
-                          Expanded(
-                            child: Column(
-                              spacing: 10,
-                              children: [
-                                ResourceCard(),
-                                ResourceCard(),
-                                ResourceCard(),
-                              ],
-                            ),
-                          ),
-                        ],
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: MasonryGridView.count(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        itemCount: resourceCards.length,
+                        itemBuilder: (context, index) => resourceCards[index],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: FilledButton(
+                  onPressed: () => {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const NewResource(),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
+                    ),
+                  },
+                  style: ButtonStyle(
+                    minimumSize: WidgetStateProperty.all(
+                      const Size(double.infinity, 40),
+                    ),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: () => {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const NewResource(),
-                          transitionDuration: Duration.zero, // 👈 No animation
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      ),
-                    },
-                    style: ButtonStyle(
-                      minimumSize: WidgetStateProperty.all(
-                        Size(double.infinity, 40),
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(10),
-                        ),
-                      ),
-                    ),
-                    child: Text("Add Resource"),
-                  ),
-                ],
+                  child: const Text("Add Resource"),
+                ),
               ),
             ],
           ),

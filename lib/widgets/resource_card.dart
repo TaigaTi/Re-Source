@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ResourceCard extends StatelessWidget {
-  const ResourceCard({super.key});
+  final double? height;
+  const ResourceCard({super.key, this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +23,8 @@ class ResourceCard extends StatelessWidget {
                 child: Image(
                   image: AssetImage("assets/images/success.png"),
                   width: double.infinity,
+                  height: height,
+                  fit: BoxFit.cover,
                 ),
               ),
               Center(
