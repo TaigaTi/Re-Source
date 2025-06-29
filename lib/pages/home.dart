@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:re_source/pages/library.dart';
+import 'package:re_source/widgets/resource_card.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -6,8 +8,13 @@ class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Re-Source'),
+        title: Image(
+          image: AssetImage("assets/images/logo-horizontal.png"),
+          width: 60,
+        ),
+        backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         actions: [
           Builder(
@@ -37,7 +44,6 @@ class Home extends StatelessWidget {
           padding: EdgeInsets.all(20),
           child: Center(
             child: Column(
-              spacing: 20,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Padding(
@@ -53,12 +59,30 @@ class Home extends StatelessWidget {
                         vertical: 8.0,
                       ),
                       prefixIcon: Icon(Icons.search),
+                      filled: true,
+                      fillColor: Color.fromRGBO(233, 233, 233, 1.0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                        borderSide: BorderSide(
+                          color: Color.fromRGBO(233, 233, 233, 1.0),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                        borderSide: BorderSide(
+                          color: Color.fromRGBO(233, 233, 233, 1.0),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
+                        borderSide: BorderSide(
+                          color: Color.fromRGBO(233, 233, 233, 1.0),
+                        ),
                       ),
                     ),
                   ),
                 ),
+                SizedBox(height: 15),
                 Column(
                   children: [
                     Row(
@@ -72,8 +96,25 @@ class Home extends StatelessWidget {
                           ),
                         ),
                         TextButton(
+                          style: ButtonStyle(
+                            overlayColor: WidgetStateProperty.all(
+                              Colors.transparent,
+                            ),
+                          ),
                           child: const Text("View All"),
-                          onPressed: () => const {},
+                          onPressed: () => {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        const Library(),
+                                transitionDuration:
+                                    Duration.zero, // 👈 No animation
+                                reverseTransitionDuration: Duration.zero,
+                              ),
+                            ),
+                          },
                         ),
                       ],
                     ),
@@ -93,9 +134,11 @@ class Home extends StatelessWidget {
                                 Radius.circular(10),
                               ),
                             ),
-                            child: Text(
-                              "Category 1",
-                              style: TextStyle(color: Colors.white),
+                            child: Center(
+                              child: Text(
+                                "Category 1",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
@@ -111,9 +154,11 @@ class Home extends StatelessWidget {
                                 Radius.circular(10),
                               ),
                             ),
-                            child: Text(
-                              "Category 1",
-                              style: TextStyle(color: Colors.white),
+                            child: Center(
+                              child: Text(
+                                "Category 2",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
@@ -129,9 +174,11 @@ class Home extends StatelessWidget {
                                 Radius.circular(10),
                               ),
                             ),
-                            child: Text(
-                              "Category 1",
-                              style: TextStyle(color: Colors.white),
+                            child: Center(
+                              child: Text(
+                                "Category 3",
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
@@ -139,6 +186,7 @@ class Home extends StatelessWidget {
                     ),
                   ],
                 ),
+                SizedBox(height: 40),
                 Column(
                   children: [
                     Row(
@@ -151,10 +199,6 @@ class Home extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        TextButton(
-                          child: const Text("View All"),
-                          onPressed: () => const {},
-                        ),
                       ],
                     ),
                     Row(
@@ -164,32 +208,9 @@ class Home extends StatelessWidget {
                           child: Column(
                             spacing: 10,
                             children: [
-                              Card(
-                                color: Colors.blue.shade100,
-                                child: SizedBox(
-                                  height: 200, // fixed height
-                                  width: double
-                                      .infinity, // take full width of column
-                                  child: Center(child: Text("Card 1")),
-                                ),
-                              ),
-                              Card(
-                                color: Colors.green.shade100,
-                                child: SizedBox(
-                                  height: 150,
-                                  width: double.infinity,
-                                  child: Center(child: Text("Card 2")),
-                                ),
-                              ),
-                              Card(
-                                color: Colors.blue.shade100,
-                                child: SizedBox(
-                                  height: 200, // fixed height
-                                  width: double
-                                      .infinity, // take full width of column
-                                  child: Center(child: Text("Card 1")),
-                                ),
-                              ),
+                              ResourceCard(),
+                              ResourceCard(),
+                              ResourceCard(),
                             ],
                           ),
                         ),
@@ -198,30 +219,9 @@ class Home extends StatelessWidget {
                           child: Column(
                             spacing: 10,
                             children: [
-                              Card(
-                                color: const Color.fromARGB(255, 208, 200, 230),
-                                child: SizedBox(
-                                  height: 150,
-                                  width: double.infinity,
-                                  child: Center(child: Text("Card 2")),
-                                ),
-                              ),
-                              Card(
-                                color: Colors.green.shade100,
-                                child: SizedBox(
-                                  height: 150,
-                                  width: double.infinity,
-                                  child: Center(child: Text("Card 2")),
-                                ),
-                              ),
-                              Card(
-                                color: const Color.fromARGB(255, 230, 204, 200),
-                                child: SizedBox(
-                                  height: 150,
-                                  width: double.infinity,
-                                  child: Center(child: Text("Card 2")),
-                                ),
-                              ),
+                              ResourceCard(),
+                              ResourceCard(),
+                              ResourceCard(),
                             ],
                           ),
                         ),
