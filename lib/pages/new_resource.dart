@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:re_source/pages/edit_resource.dart';
 import 'package:re_source/widgets/back_title.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
@@ -88,7 +88,7 @@ class NewResource extends StatelessWidget {
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        const NewResource(),
+                        const EditResource(),
                     transitionDuration: Duration.zero, // 👈 No animation
                     reverseTransitionDuration: Duration.zero,
                   ),
