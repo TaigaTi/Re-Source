@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:re_source/pages/library.dart';
+import 'package:re_source/widgets/custom_appbar.dart';
+import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:re_source/widgets/resource_card.dart';
 
 class Home extends StatelessWidget {
@@ -9,36 +11,8 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Image(
-          image: AssetImage("assets/images/logo-horizontal.png"),
-          width: 60,
-        ),
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        actions: [
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: Scaffold.of(context).openDrawer,
-              icon: const Icon(Icons.menu),
-            ),
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              child: Image(
-                image: AssetImage("assets/images/logo-horizontal.png"),
-              ),
-            ),
-            ListTile(title: const Text('Home'), onTap: () {}),
-            ListTile(title: const Text('Library'), onTap: () {}),
-          ],
-        ),
-      ),
+      appBar: CustomAppBar(),
+      drawer: CustomDrawer(),
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.all(20),
