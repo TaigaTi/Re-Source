@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:re_source/pages/category.dart';
 import 'package:re_source/pages/library.dart';
 import 'package:re_source/pages/new_resource.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
@@ -95,7 +96,21 @@ class Home extends StatelessWidget {
                         children: [
                           Expanded(
                             child: TextButton(
-                              onPressed: () {},
+                              onPressed: () => {
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder:
+                                        (
+                                          context,
+                                          animation,
+                                          secondaryAnimation,
+                                        ) => const Category(),
+                                    transitionDuration: Duration.zero,
+                                    reverseTransitionDuration: Duration.zero,
+                                  ),
+                                ),
+                              },
                               style: TextButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 10.0,
