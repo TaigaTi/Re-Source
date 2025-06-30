@@ -31,39 +31,25 @@ class Home extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Search Bar
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Looking for something?',
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 15.0,
-                        vertical: 8.0,
-                      ),
-                      prefixIcon: Icon(Icons.search),
-                      filled: true,
-                      fillColor: Color.fromRGBO(233, 233, 233, 1.0),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                        borderSide: BorderSide(
-                          color: Color.fromRGBO(233, 233, 233, 1.0),
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                        borderSide: BorderSide(
-                          color: Color.fromRGBO(233, 233, 233, 1.0),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(50.0)),
-                        borderSide: BorderSide(
-                          color: Color.fromRGBO(233, 233, 233, 1.0),
-                        ),
+                SearchBar(
+                  onChanged: (value) {},
+                  hintText: "Looking for something?",
+                  leading: const Icon(Icons.search),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50.0),
+                      side: const BorderSide(
+                        color: Color.fromRGBO(233, 233, 233, 1.0),
                       ),
                     ),
                   ),
+                  backgroundColor: WidgetStateProperty.all(
+                    const Color.fromRGBO(233, 233, 233, 1.0),
+                  ),
+                  padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+                  ),
+                  elevation: WidgetStateProperty.all(0),
                 ),
                 const SizedBox(height: 15),
                 // Recent Categories
@@ -205,8 +191,9 @@ class Home extends StatelessWidget {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) =>
-                              const NewResource(),
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const NewResource(),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
