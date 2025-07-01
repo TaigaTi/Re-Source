@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:re_source/pages/home.dart';
 import 'package:re_source/pages/library.dart';
+import 'package:re_source/pages/success.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -38,6 +39,20 @@ class CustomDrawer extends StatelessWidget {
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const Library(),
+                  transitionDuration: Duration.zero, // 👈 No animation
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              ),
+            },
+          ),
+          ListTile(
+            title: const Text('Success'),
+            onTap: () => {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const Success(),
                   transitionDuration: Duration.zero, // 👈 No animation
                   reverseTransitionDuration: Duration.zero,
                 ),
