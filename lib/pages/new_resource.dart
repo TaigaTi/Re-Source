@@ -20,7 +20,7 @@ class NewResource extends StatelessWidget {
             child: Column(
               children: [
                 BackTitle(title: "Add Resource"),
-                SizedBox(height: 15,),
+                SizedBox(height: 15),
                 Card(
                   color: Colors.blue.shade100,
                   child: SizedBox(
@@ -31,11 +31,15 @@ class NewResource extends StatelessWidget {
                         children: [
                           Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10),
+                              ),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: Image(
-                              image: AssetImage("assets/images/resource-holding.png"),
+                              image: AssetImage(
+                                "assets/images/resource-holding.png",
+                              ),
                               width: double.infinity,
                             ),
                           ),
@@ -97,11 +101,16 @@ class NewResource extends StatelessWidget {
                     ),
                   },
                   style: ButtonStyle(
-                    minimumSize: WidgetStateProperty.all(Size(double.infinity, 40)),
+                    minimumSize: WidgetStateProperty.all(
+                      Size(double.infinity, 45),
+                    ),
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadiusGeometry.circular(10),
                       ),
+                    ),
+                    backgroundColor: WidgetStateProperty.all(
+                      const Color.fromARGB(255, 87, 175, 161),
                     ),
                   ),
                   child: Text("Next"),

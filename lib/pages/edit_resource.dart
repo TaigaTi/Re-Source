@@ -23,7 +23,7 @@ class EditResource extends StatelessWidget {
                 Card(
                   color: Colors.blue.shade100,
                   child: SizedBox(
-                    width: double.infinity, 
+                    width: double.infinity,
                     child: Container(
                       padding: EdgeInsets.all(35),
                       child: Column(
@@ -159,7 +159,8 @@ class EditResource extends StatelessWidget {
                           Column(
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     "Image",
@@ -207,11 +208,16 @@ class EditResource extends StatelessWidget {
                     ),
                   },
                   style: ButtonStyle(
-                    minimumSize: WidgetStateProperty.all(Size(double.infinity, 40)),
+                    minimumSize: WidgetStateProperty.all(
+                      Size(double.infinity, 45),
+                    ),
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadiusGeometry.circular(10),
                       ),
+                    ),
+                    backgroundColor: WidgetStateProperty.all(
+                      const Color.fromARGB(255, 87, 175, 161),
                     ),
                   ),
                   child: Text("Next"),
