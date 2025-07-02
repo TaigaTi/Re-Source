@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:re_source/pages/error.dart';
 import 'package:re_source/pages/home.dart';
 import 'package:re_source/pages/library.dart';
 import 'package:re_source/pages/success.dart';
@@ -52,7 +53,21 @@ class CustomDrawer extends StatelessWidget {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
-                      const Success(),
+                      const SuccessPage(),
+                  transitionDuration: Duration.zero, // 👈 No animation
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              ),
+            },
+          ),
+          ListTile(
+            title: const Text('Error'),
+            onTap: () => {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const ErrorPage(),
                   transitionDuration: Duration.zero, // 👈 No animation
                   reverseTransitionDuration: Duration.zero,
                 ),

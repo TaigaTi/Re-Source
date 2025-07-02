@@ -3,8 +3,8 @@ import 'package:re_source/pages/home.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 
-class Success extends StatelessWidget {
-  const Success({super.key});
+class SuccessPage extends StatelessWidget {
+  const SuccessPage({super.key});
 
   @override
   Widget build(BuildContext context) {
