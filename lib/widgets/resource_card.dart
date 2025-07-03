@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 class ResourceCard extends StatelessWidget {
   final double? height;
-  const ResourceCard({super.key, this.height});
+  final Color? color;
+  const ResourceCard({super.key, this.height, this.color});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.blue.shade100,
+      color: color,
       child: SizedBox(
         width: double.infinity, // take full width of column
         child: Container(
@@ -30,7 +31,10 @@ class ResourceCard extends StatelessWidget {
               Center(
                 child: Text(
                   "Resource Title",
-                  style: TextStyle(fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

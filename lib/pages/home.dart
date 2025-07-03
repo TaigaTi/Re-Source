@@ -8,12 +8,21 @@ import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:re_source/widgets/resource_card.dart';
 
 const resourceCards = [
-  ResourceCard(height: 120),
-  ResourceCard(height: 170),
-  ResourceCard(height: 140),
-  ResourceCard(height: 130),
-  ResourceCard(height: 100),
-  ResourceCard(height: 120),
+  ResourceCard(height: 120, color: Color.fromARGB(255, 153, 117, 210)),
+  ResourceCard(height: 170, color: Color.fromARGB(255, 219, 135, 141)),
+  ResourceCard(height: 140, color: Color.fromARGB(255, 213, 104, 215)),
+  ResourceCard(height: 130, color: Color.fromARGB(255, 133, 178, 130)),
+  ResourceCard(height: 100, color: Color.fromARGB(255, 122, 139, 229)),
+  ResourceCard(height: 120, color: Color.fromARGB(255, 219, 135, 141)),
+];
+
+final List<Map<String, dynamic>> categories = const [
+  {"title": "Technology", "color": Color.fromARGB(255, 153, 117, 210)},
+  {"title": "UIUX", "color": Color.fromARGB(255, 219, 135, 141)},
+  {"title": "Design", "color": Color.fromARGB(255, 133, 178, 130)},
+  {"title": "Web Development", "color": Color.fromARGB(255, 216, 141, 117)},
+  {"title": "Piano", "color": Color.fromARGB(255, 122, 139, 229)},
+  {"title": "Art & Design", "color": Color.fromARGB(255, 213, 104, 215)},
 ];
 
 class Home extends StatelessWidget {
@@ -92,82 +101,43 @@ class Home extends StatelessWidget {
                       width: double.infinity,
                       height: 40,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () => {
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder:
-                                        (
-                                          context,
-                                          animation,
-                                          secondaryAnimation,
-                                        ) => const Category(),
-                                    transitionDuration: Duration.zero,
-                                    reverseTransitionDuration: Duration.zero,
+                        children: List.generate(3, (index) {
+                          return Expanded(
+                            child: Padding(
+                              padding:
+                                  EdgeInsets.only(right: index < 2 ? 10.0 : 0),
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation,
+                                              secondaryAnimation) =>
+                                          const Category(),
+                                      transitionDuration: Duration.zero,
+                                      reverseTransitionDuration: Duration.zero,
+                                    ),
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10.0,
+                                    horizontal: 0.0,
+                                  ),
+                                  backgroundColor: categories[index]['color'],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                              },
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10.0,
-                                  horizontal: 15.0,
+                                child: Text(
+                                  categories[index]['title'],
+                                  style: const TextStyle(color: Colors.white),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                backgroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text(
-                                "Category 1",
-                                style: TextStyle(color: Colors.white),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {},
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10.0,
-                                  horizontal: 15.0,
-                                ),
-                                backgroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text(
-                                "Category 2",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {},
-                              style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10.0,
-                                  horizontal: 15.0,
-                                ),
-                                backgroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text(
-                                "Category 3",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
+                          );
+                        }),
                       ),
                     ),
                   ],
