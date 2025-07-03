@@ -89,15 +89,21 @@ class Category extends StatelessWidget {
                     },
                     style: ButtonStyle(
                       minimumSize: WidgetStateProperty.all(
-                        const Size(double.infinity, 40),
+                        const Size(double.infinity, 45),
                       ),
                       shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
+                      backgroundColor: WidgetStateProperty.all(
+                        const Color.fromARGB(255, 87, 175, 161),
+                      ),
                     ),
-                    child: const Text("Add Resource"),
+                    child: const Text(
+                      "Add Resource",
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
               ],

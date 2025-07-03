@@ -220,7 +220,7 @@ class EditResource extends StatelessWidget {
                       const Color.fromARGB(255, 87, 175, 161),
                     ),
                   ),
-                  child: Text("Next"),
+                  child: Text("Next", style: TextStyle(fontSize: 18),),
                 ),
               ],
             ),

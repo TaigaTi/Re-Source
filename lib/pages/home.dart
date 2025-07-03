@@ -227,7 +227,10 @@ class Home extends StatelessWidget {
                         const Color.fromARGB(255, 87, 175, 161),
                       ),
                     ),
-                    child: const Text("Add Resource"),
+                    child: const Text(
+                      "Add Resource",
+                      style: TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
               ],
