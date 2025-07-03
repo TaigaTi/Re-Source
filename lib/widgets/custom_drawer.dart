@@ -46,34 +46,6 @@ class CustomDrawer extends StatelessWidget {
               ),
             },
           ),
-          ListTile(
-            title: const Text('Success'),
-            onTap: () => {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const SuccessPage(),
-                  transitionDuration: Duration.zero, // 👈 No animation
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            },
-          ),
-          ListTile(
-            title: const Text('Error'),
-            onTap: () => {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const ErrorPage(),
-                  transitionDuration: Duration.zero, // 👈 No animation
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            },
-          ),
         ],
       ),
     );
