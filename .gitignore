@@ -1,45 +1,113 @@
-# Miscellaneous
+# ----------------------------------------
+# 🌐 General
+# ----------------------------------------
 *.class
 *.log
 *.pyc
 *.swp
+*.lock
 .DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
+.env
 
-# IntelliJ related
+# ----------------------------------------
+# 🧠 IDEs and Editors
+# ----------------------------------------
+
+# IntelliJ / Android Studio
 *.iml
 *.ipr
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code
+.vscode/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# Atom
+.atom/
+
+# ----------------------------------------
+# 🛠️ Flutter & Dart
+# ----------------------------------------
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
-.pub-cache/
+.packages
 .pub/
-/build/
+.pub-cache/
+build/
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
 
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
+# ----------------------------------------
+# 🏗️ Build Outputs
+# ----------------------------------------
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ----------------------------------------
+# 🔐 Firebase & Secrets
+# ----------------------------------------
+.env
+.env.*
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase_app_id_file.json
+**/android/key.properties
+
+# ----------------------------------------
+# 📱 Android
+# ----------------------------------------
+android/.gradle/
+android/.idea/
+
+# ----------------------------------------
+# 🍏 iOS
+# ----------------------------------------
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+
+# ----------------------------------------
+# 🍎 macOS
+# ----------------------------------------
+macos/Flutter/ephemeral/
+
+# ----------------------------------------
+# 🧊 Windows / Linux
+# ----------------------------------------
+windows/Flutter/ephemeral/
+linux/Flutter/ephemeral/
+
+# ----------------------------------------
+# 🧪 Flutter Web
+# ----------------------------------------
+web/generated_plugin_registrant.dart
+
+# ----------------------------------------
+# 🧩 Xcode
+# ----------------------------------------
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+*.xcodeproj/project.xcworkspace/
+DerivedData/
+*.xcuserdatad/
+
+# ----------------------------------------
+# 🧪 Obfuscation & Symbolication
+# ----------------------------------------
+app.*.map.json
+app.*.symbols
+
+# ----------------------------------------
+# 🗂️ Miscellaneous
+# ----------------------------------------
+.history
+.svn/
+.swiftpm/
+.build/
+.buildlog/
+migrate_working_dir/
