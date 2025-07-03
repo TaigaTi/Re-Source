@@ -7,12 +7,12 @@ import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:re_source/widgets/resource_card.dart';
 
 const resourceCards = [
-  ResourceCard(height: 120),
-  ResourceCard(height: 170),
-  ResourceCard(height: 140),
-  ResourceCard(height: 130),
-  ResourceCard(height: 100),
-  ResourceCard(height: 120),
+  ResourceCard(height: 120, color: Color.fromARGB(255, 153, 117, 210)),
+  ResourceCard(height: 170, color: Color.fromARGB(255, 219, 135, 141)),
+  ResourceCard(height: 140, color: Color.fromARGB(255, 213, 104, 215)),
+  ResourceCard(height: 130, color: Color.fromARGB(255, 133, 178, 130)),
+  ResourceCard(height: 100, color: Color.fromARGB(255, 122, 139, 229)),
+  ResourceCard(height: 120, color: Color.fromARGB(255, 219, 135, 141)),
 ];
 
 class Category extends StatelessWidget {

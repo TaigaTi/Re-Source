@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 class ResourceCard extends StatelessWidget {
   final double? height;
-  final Color? color;
-  const ResourceCard({super.key, this.height, this.color});
+  final Color color;
+  const ResourceCard({super.key, this.height, required this.color});
 
   @override
   Widget build(BuildContext context) {
