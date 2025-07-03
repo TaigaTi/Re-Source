@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/home.dart';
+import 'package:re_source/pages/login.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const Home(),
+      home: const Login(),
     );
   }
 }

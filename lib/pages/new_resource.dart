@@ -22,7 +22,7 @@ class NewResource extends StatelessWidget {
                 BackTitle(title: "Add Resource"),
                 SizedBox(height: 15),
                 Card(
-                  color: Colors.blue.shade100,
+                  color: const Color.fromARGB(255, 233, 233, 233),
                   child: SizedBox(
                     width: double.infinity, // take full width of column
                     child: Container(

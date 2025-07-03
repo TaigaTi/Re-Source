@@ -21,7 +21,7 @@ class EditResource extends StatelessWidget {
                 BackTitle(title: "Edit Resource"),
                 SizedBox(height: 15),
                 Card(
-                  color: Colors.blue.shade100,
+                  color: const Color.fromARGB(255, 233, 233, 233),
                   child: SizedBox(
                     width: double.infinity,
                     child: Container(
