@@ -47,7 +47,7 @@ class ErrorPage extends StatelessWidget {
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: Image(
-                            height:275,
+                            height: 275,
                             image: AssetImage("assets/images/error.png"),
                           ),
                         ),
@@ -135,7 +135,7 @@ class ErrorPage extends StatelessWidget {
                     ),
                     child: const Text(
                       "Return Home",
-                      style: TextStyle(fontSize: 16, color: Colors.blueGrey),
+                      style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 110, 110, 110)),
                     ),
                   ),
                 ),
