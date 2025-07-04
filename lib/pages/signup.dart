@@ -3,6 +3,7 @@ import 'package:re_source/pages/home.dart';
 import 'package:re_source/pages/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -18,18 +19,32 @@ class _SignUpState extends State<SignUp> {
       TextEditingController();
   String? _errorMessage;
 
+  Future<void> addUser(String uid, String email) async {
+    final FirebaseFirestore database = FirebaseFirestore.instance;
+    try {
+      await database.collection('users').doc(uid).set({
+        'email': email,
+      });
+    } catch (e, stack) {
+      await FirebaseCrashlytics.instance.recordError(e, stack, reason: 'Error adding user to Firestore');
+      rethrow;
+    }
+  }
+
   Future<void> signUpWithEmailAndPassword(String email, String password) async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+      if (userCredential.user != null) {
+        await addUser(userCredential.user!.uid, email);
+      }
       if (mounted) {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const Home(),
+            pageBuilder: (context, animation, secondaryAnimation) => const Home(),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),
@@ -48,7 +63,7 @@ class _SignUpState extends State<SignUp> {
       await FirebaseCrashlytics.instance.recordError(
         e,
         stack,
-        reason: 'General error during sign up',
+        reason: 'Error during sign up',
       );
       setState(() {
         _errorMessage = "An error occurred. Please try again.";

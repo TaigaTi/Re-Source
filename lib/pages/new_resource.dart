@@ -1,11 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:re_source/pages/edit_resource.dart';
+import 'package:re_source/pages/edit_resource.dart'; // Make sure this path is correct
 import 'package:re_source/widgets/back_title.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 
-class NewResource extends StatelessWidget {
+class NewResource extends StatefulWidget {
   const NewResource({super.key});
+
+  @override
+  State<NewResource> createState() => _NewResourceState();
+}
+
+class _NewResourceState extends State<NewResource> {
+  late TextEditingController _linkInputController;
+
+  @override
+  void initState() {
+    super.initState();
+    _linkInputController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _linkInputController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,48 +35,49 @@ class NewResource extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.all(30),
+            padding: const EdgeInsets.all(30),
             child: Column(
               children: [
-                BackTitle(title: "Add Resource"),
-                SizedBox(height: 15),
+                const BackTitle(title: "Add Resource"),
+                const SizedBox(height: 15),
                 Card(
                   color: const Color.fromARGB(255, 233, 233, 233),
                   child: SizedBox(
-                    width: double.infinity, // take full width of column
+                    width: double.infinity,
                     child: Container(
-                      padding: EdgeInsets.all(35),
+                      padding: const EdgeInsets.all(35),
                       child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start, 
                         children: [
                           Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               borderRadius: BorderRadius.all(
                                 Radius.circular(10),
                               ),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: Image(
-                              image: AssetImage(
+                              image: const AssetImage(
                                 "assets/images/resource-holding.png",
                               ),
                               width: double.infinity,
+                              fit: BoxFit
+                                  .cover, 
                             ),
                           ),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Resource Link",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(height: 20),
+                          const Text(
+                            "Resource Link",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           TextField(
+                            controller:
+                                _linkInputController, 
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
@@ -79,41 +99,55 @@ class NewResource extends StatelessWidget {
                                 vertical: 12,
                               ),
                             ),
-                            keyboardType: TextInputType.text,
-                            onChanged: (value) {},
+                            keyboardType: TextInputType
+                                .url, 
                           ),
                         ],
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 FilledButton(
-                  onPressed: () => {
+                  onPressed: () {
+                    final String? link =
+                        _linkInputController.text.trim().isEmpty
+                        ? null 
+                        : _linkInputController.text.trim();
+
+                    if (link == null || link.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enter a resource link.'),
+                        ),
+                      );
+                      return;
+                    }
+
                     Navigator.push(
                       context,
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
-                            const EditResource(),
-                        transitionDuration: Duration.zero, // 👈 No animation
+                            EditResource(link: link),
+                        transitionDuration: Duration.zero,
                         reverseTransitionDuration: Duration.zero,
                       ),
-                    ),
+                    );
                   },
                   style: ButtonStyle(
                     minimumSize: WidgetStateProperty.all(
-                      Size(double.infinity, 45),
+                      const Size(double.infinity, 45),
                     ),
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     backgroundColor: WidgetStateProperty.all(
                       const Color.fromARGB(255, 87, 175, 161),
                     ),
                   ),
-                  child: Text("Next", style: TextStyle(fontSize: 16)),
+                  child: const Text("Next", style: TextStyle(fontSize: 16)),
                 ),
               ],
             ),
