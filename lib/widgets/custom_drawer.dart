@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:re_source/pages/home.dart';
 import 'package:re_source/pages/library.dart';
-import 'package:re_source/pages/login.dart';
 import 'package:re_source/pages/profile.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -40,20 +39,6 @@ class CustomDrawer extends StatelessWidget {
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const Library(),
-                  transitionDuration: Duration.zero, // 👈 No animation
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              ),
-            },
-          ),
-          ListTile(
-            title: const Text('Login'),
-            onTap: () => {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const Login(),
                   transitionDuration: Duration.zero, // 👈 No animation
                   reverseTransitionDuration: Duration.zero,
                 ),
