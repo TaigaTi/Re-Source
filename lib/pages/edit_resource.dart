@@ -7,6 +7,8 @@ import 'package:re_source/pages/success.dart';
 import 'package:re_source/widgets/back_title.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
+import 'dart:math';
+import 'package:re_source/colors.dart';
 
 class EditResource extends StatefulWidget {
   final String? link;
@@ -71,6 +73,14 @@ class _EditResourceState extends State<EditResource> {
       return;
     }
 
+    int getRandomCategoryColor() {
+      final Random random = Random();
+
+      int randomIndex = random.nextInt(colors.length);
+
+      return colors[randomIndex].toARGB32();
+    }
+
     try {
       String actualCategoryId;
 
@@ -90,6 +100,7 @@ class _EditResourceState extends State<EditResource> {
         final newCategoryDocRef = await userCategoriesRef.add({
           'name': categoryName,
           'createdAt': FieldValue.serverTimestamp(),
+          'color': getRandomCategoryColor(),
         });
         actualCategoryId = newCategoryDocRef.id;
       }
@@ -156,7 +167,8 @@ class _EditResourceState extends State<EditResource> {
                     child: Container(
                       padding: const EdgeInsets.all(35),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, // Align labels to start
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start, // Align labels to start
                         children: [
                           const Text(
                             "Title",
@@ -202,7 +214,7 @@ class _EditResourceState extends State<EditResource> {
                           ),
                           const SizedBox(height: 5),
                           TextField(
-                            controller: _categoryController, 
+                            controller: _categoryController,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,
@@ -226,7 +238,7 @@ class _EditResourceState extends State<EditResource> {
                             ),
                             keyboardType: TextInputType.text,
                           ),
-                          const SizedBox(height: 15), 
+                          const SizedBox(height: 15),
 
                           const Text(
                             "Description",
@@ -237,7 +249,7 @@ class _EditResourceState extends State<EditResource> {
                           ),
                           const SizedBox(height: 5),
                           TextField(
-                            controller: _descriptionController, 
+                            controller: _descriptionController,
                             maxLines: null,
                             minLines: 3,
                             keyboardType: TextInputType.multiline,
@@ -262,7 +274,7 @@ class _EditResourceState extends State<EditResource> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 15), 
+                          const SizedBox(height: 15),
 
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

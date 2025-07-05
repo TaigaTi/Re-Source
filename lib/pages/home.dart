@@ -1,32 +1,58 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:re_source/pages/category.dart';
 import 'package:re_source/pages/library.dart';
+import 'package:re_source/pages/login.dart';
 import 'package:re_source/pages/new_resource.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
-import 'package:re_source/widgets/resource_card.dart';
+// import 'package:re_source/widgets/resource_card.dart';
 
-const resourceCards = [
-  ResourceCard(height: 120, color: Color.fromARGB(255, 153, 117, 210)),
-  ResourceCard(height: 170, color: Color.fromARGB(255, 219, 135, 141)),
-  ResourceCard(height: 140, color: Color.fromARGB(255, 213, 104, 215)),
-  ResourceCard(height: 130, color: Color.fromARGB(255, 133, 178, 130)),
-  ResourceCard(height: 100, color: Color.fromARGB(255, 122, 139, 229)),
-  ResourceCard(height: 120, color: Color.fromARGB(255, 219, 135, 141)),
-];
-
-final List<Map<String, dynamic>> categories = const [
-  {"title": "Technology", "color": Color.fromARGB(255, 153, 117, 210)},
-  {"title": "UIUX", "color": Color.fromARGB(255, 219, 135, 141)},
-  {"title": "Design", "color": Color.fromARGB(255, 133, 178, 130)},
-  {"title": "Web Development", "color": Color.fromARGB(255, 216, 141, 117)},
-  {"title": "Piano", "color": Color.fromARGB(255, 122, 139, 229)},
-  {"title": "Art & Design", "color": Color.fromARGB(255, 213, 104, 215)},
-];
-
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home({super.key});
+
+  @override
+  HomeState createState() => HomeState();
+}
+
+class HomeState extends State<Home> {
+  final List<Widget> resourceCards = const [];
+
+  Future<List<Map<String, dynamic>>> fetchCategories() async {
+    final FirebaseFirestore database = FirebaseFirestore.instance;
+    final FirebaseAuth auth = FirebaseAuth.instance;
+
+    final User? user = auth.currentUser;
+
+    if (user == null) {
+      if (mounted) {
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => Login()));
+      }
+      throw Exception('User not logged in.');
+    }
+
+    final QuerySnapshot<Map<String, dynamic>> snapshot = await database
+        .collection('users')
+        .doc(user.uid)
+        .collection('categories')
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      final String categoryName =
+          (data['name'] as String?) ?? 'Untitled Category';
+      final int? colorValue = data['color'];
+      final Color categoryColor = colorValue != null
+          ? Color(colorValue)
+          : Colors.grey; // Default color if not found
+
+      return {"name": categoryName, "color": categoryColor};
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,44 +126,84 @@ class Home extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       height: 40,
-                      child: Row(
-                        children: List.generate(3, (index) {
-                          return Expanded(
-                            child: Padding(
-                              padding:
-                                  EdgeInsets.only(right: index < 2 ? 10.0 : 0),
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder: (context, animation,
-                                              secondaryAnimation) =>
-                                          const Category(),
-                                      transitionDuration: Duration.zero,
-                                      reverseTransitionDuration: Duration.zero,
+                      child: FutureBuilder<List<Map<String, dynamic>>>(
+                        future:
+                            fetchCategories(), // Call the async function here
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Error: ${snapshot.error}'),
+                            );
+                          } else if (!snapshot.hasData ||
+                              snapshot.data!.isEmpty) {
+                            return const Center(
+                              child: Text('No categories found.'),
+                            );
+                          } else {
+                            final categories = snapshot.data!;
+                            // Display only the first 3 categories or fewer if not available
+                            final int displayCount = categories.length > 3
+                                ? 3
+                                : categories.length;
+                            return Row(
+                              children: List.generate(displayCount, (index) {
+                                return Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: index < displayCount - 1
+                                          ? 10.0
+                                          : 0,
                                     ),
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10.0,
-                                    horizontal: 0.0,
+                                    child: TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          PageRouteBuilder(
+                                            pageBuilder:
+                                                (
+                                                  context,
+                                                  animation,
+                                                  secondaryAnimation,
+                                                ) =>
+                                                    const Category(), // You might want to pass category data here
+                                            transitionDuration: Duration.zero,
+                                            reverseTransitionDuration:
+                                                Duration.zero,
+                                          ),
+                                        );
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 10.0,
+                                          horizontal: 8.0,
+                                        ),
+                                        backgroundColor:
+                                            categories[index]['color'],
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        categories[index]['name'],
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ),
-                                  backgroundColor: categories[index]['color'],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: Text(
-                                  categories[index]['title'],
-                                  style: const TextStyle(color: Colors.white),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
+                                );
+                              }),
+                            );
+                          }
+                        },
                       ),
                     ),
                   ],
@@ -162,7 +228,8 @@ class Home extends StatelessWidget {
                           crossAxisCount: 2,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
-                          itemCount: resourceCards.length,
+                          itemCount: resourceCards
+                              .length, // Ensure resourceCards is populated
                           itemBuilder: (context, index) => resourceCards[index],
                         ),
                       ),

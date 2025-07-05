@@ -58,7 +58,9 @@ class ProfilePage extends StatelessWidget {
                         if (context.mounted) {
                           Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(builder: (context) => const Login()),
+                            MaterialPageRoute(
+                              builder: (context) => const Login(),
+                            ),
                             (route) => false,
                           );
                         }
@@ -73,19 +75,14 @@ class ProfilePage extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        minimumSize: Size(
-                          double.infinity,
-                          36,
-                        ),
+                        minimumSize: Size(double.infinity, 36),
                       ),
                       child: Text('Logout', style: TextStyle(fontSize: 16)),
                     ),
                     SizedBox(height: 25),
                     // Delete Account Button
                     ElevatedButton(
-                      onPressed: () {
-                        print('Delete Account button pressed');
-                      },
+                      onPressed: () {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade600,
                         foregroundColor: Colors.white,
@@ -96,10 +93,7 @@ class ProfilePage extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        minimumSize: Size(
-                          double.infinity,
-                          36,
-                        ),
+                        minimumSize: Size(double.infinity, 36),
                       ),
                       child: Text(
                         'Delete Account',
