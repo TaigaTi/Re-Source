@@ -117,9 +117,6 @@ class _EditResourceState extends State<EditResource> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Resource added successfully!')),
-        );
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
