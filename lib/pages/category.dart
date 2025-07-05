@@ -16,7 +16,10 @@ const resourceCards = [
 ];
 
 class Category extends StatelessWidget {
-  const Category({super.key});
+  final String? name;
+  final Color? color;
+  final String? id;
+  const Category({super.key, this.name, this.color, this.id});
 
   @override
   Widget build(BuildContext context) {
