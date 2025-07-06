@@ -93,7 +93,7 @@ class HomeState extends State<Home> {
           in resourcesSnapshot.docs) {
         final Map<String, dynamic> resourceData = resourceDoc.data();
         allResourcesWithCategoryInfo.add({
-          ...resourceData, 
+          ...resourceData,
           'resourceId': resourceDoc.id,
           'categoryId': categoryId,
           'categoryName': categoryName,
@@ -194,7 +194,12 @@ class HomeState extends State<Home> {
                               Colors.transparent,
                             ),
                           ),
-                          child: const Text("View All"),
+                          child: const Text(
+                            "View All",
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 87, 175, 161),
+                            ),
+                          ),
                           onPressed: () {
                             Navigator.push(
                               context,
