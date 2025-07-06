@@ -9,6 +9,9 @@ class ResourceCard extends StatelessWidget {
   final String? categoryName;
   final Color? categoryColor;
   final Color? textColor;
+  final Color? backgroundColor;
+  final bool indicator; // Controls the visibility of the circle indicator
+
   const ResourceCard({
     super.key,
     required this.id,
@@ -18,22 +21,24 @@ class ResourceCard extends StatelessWidget {
     this.categoryId,
     this.categoryName,
     this.categoryColor,
-    this.textColor
+    this.textColor,
+    this.backgroundColor,
+    required this.indicator, 
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: categoryColor,
+      color: backgroundColor ?? categoryColor,
       child: SizedBox(
-        width: double.infinity, 
+        width: double.infinity,
         child: Container(
-          padding: EdgeInsets.all(15),
+          padding: const EdgeInsets.all(15), 
           child: Column(
-            spacing: 10,
+            mainAxisSize: MainAxisSize.min, 
             children: [
               Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration( 
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
                 clipBehavior: Clip.antiAlias,
@@ -43,13 +48,39 @@ class ResourceCard extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              Center(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: textColor ?? Colors.white,
-                  ),
+              const SizedBox(height: 10),
+
+              Center( 
+                child: Row(
+                  mainAxisSize: MainAxisSize.min, 
+                  children: [
+                    Visibility(
+                      visible: indicator, 
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 5.0),
+                        child: Container(
+                          width: 9, 
+                          height: 9, 
+                          decoration: BoxDecoration(
+                            color: categoryColor, 
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Title text
+                    Flexible( 
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: textColor ?? Colors.white,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                  ],
                 ),
               ),
             ],

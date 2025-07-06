@@ -148,6 +148,7 @@ class CategoryState extends State<Category> {
                               categoryId: widget.id,
                               categoryName: widget.name,
                               categoryColor: widget.color,
+                              indicator: false,
                             );
                           },
                         );

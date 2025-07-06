@@ -81,8 +81,10 @@ class HomeState extends State<Home> {
       final String categoryId = categoryDoc.id;
       final String categoryName =
           (categoryDoc.data()['name'] as String?) ?? 'Uncategorized';
-      // final int? categoryColorValue = categoryDoc.data()['color'];
-      final Color categoryColor =  Color.fromARGB(255, 233, 233, 233);
+      final int? categoryColorValue = categoryDoc.data()['color'];
+      final Color categoryColor = categoryColorValue != null
+          ? Color(categoryColorValue)
+          : Colors.grey;
 
       final QuerySnapshot<Map<String, dynamic>> resourcesSnapshot =
           await categoryDoc.reference.collection('resources').get();
@@ -136,7 +138,9 @@ class HomeState extends State<Home> {
         categoryId: categoryId,
         categoryName: categoryName,
         categoryColor: categoryColor,
-        textColor: const Color.fromARGB(255, 149, 149, 149),
+        textColor: const Color.fromARGB(255, 89, 89, 89),
+        backgroundColor: Color.fromARGB(255, 233, 233, 233),
+        indicator: true,
       );
     }).toList();
   }
