@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:re_source/pages/login.dart';
 import 'package:re_source/pages/new_resource.dart';
+import 'package:re_source/widgets/category_card.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
-import 'package:re_source/pages/category.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // Import Crashlytics
 
 class Library extends StatefulWidget {
@@ -140,40 +140,7 @@ class LibraryState extends State<Library> {
                               vertical: 8.0,
                               horizontal: 0.0,
                             ),
-                            child: ListTile(
-                              dense: true,
-                              tileColor: category['color'] as Color,
-                              title: Text(
-                                category['name'] as String,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder:
-                                        (
-                                          context,
-                                          animation,
-                                          secondaryAnimation,
-                                        ) => Category(
-                                          name: category['name'] as String,
-                                          color: category['color'] as Color,
-                                          id: category['id'] as String,
-                                        ),
-                                    transitionDuration: Duration.zero,
-                                    reverseTransitionDuration: Duration.zero,
-                                  ),
-                                );
-                              },
-                            ),
+                            child: CategoryCard(category: category,),
                           );
                         },
                       );

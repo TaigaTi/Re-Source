@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
 
 class ResourceCard extends StatelessWidget {
-  final double? height;
-  final Color color;
-  const ResourceCard({super.key, this.height, required this.color});
+  final String id;
+  final String title;
+  final String link;
+  final String? description;
+  final String? categoryId;
+  final String? categoryName;
+  final Color? categoryColor;
+  const ResourceCard({
+    super.key,
+    required this.id,
+    required this.title,
+    required this.link,
+    required this.description,
+    this.categoryId,
+    this.categoryName,
+    this.categoryColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color,
+      color: categoryColor,
       child: SizedBox(
-        width: double.infinity, // take full width of column
+        width: double.infinity, 
         child: Container(
           padding: EdgeInsets.all(15),
           child: Column(
@@ -24,13 +38,12 @@ class ResourceCard extends StatelessWidget {
                 child: Image(
                   image: AssetImage("assets/images/success.png"),
                   width: double.infinity,
-                  height: height,
                   fit: BoxFit.cover,
                 ),
               ),
               Center(
                 child: Text(
-                  "Resource Title",
+                  title,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     color: Colors.white,

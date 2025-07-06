@@ -50,7 +50,7 @@ class HomeState extends State<Home> {
           ? Color(colorValue)
           : Colors.grey; // Default color if not found
 
-      return {"name": categoryName, "color": categoryColor};
+      return {"id": doc.id, "name": categoryName, "color": categoryColor};
     }).toList();
   }
 
@@ -152,6 +152,7 @@ class HomeState extends State<Home> {
                                 : categories.length;
                             return Row(
                               children: List.generate(displayCount, (index) {
+                                final category = categories[index];
                                 return Expanded(
                                   child: Padding(
                                     padding: EdgeInsets.only(
@@ -169,8 +170,11 @@ class HomeState extends State<Home> {
                                                   context,
                                                   animation,
                                                   secondaryAnimation,
-                                                ) =>
-                                                    const Category(), // You might want to pass category data here
+                                                ) => Category(
+                                                  id: category['id'],
+                                                  name: category['name'],
+                                                  color: category['color'],
+                                                ),
                                             transitionDuration: Duration.zero,
                                             reverseTransitionDuration:
                                                 Duration.zero,
