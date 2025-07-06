@@ -8,6 +8,7 @@ class ResourceCard extends StatelessWidget {
   final String? categoryId;
   final String? categoryName;
   final Color? categoryColor;
+  final Color? textColor;
   const ResourceCard({
     super.key,
     required this.id,
@@ -17,6 +18,7 @@ class ResourceCard extends StatelessWidget {
     this.categoryId,
     this.categoryName,
     this.categoryColor,
+    this.textColor
   });
 
   @override
@@ -46,7 +48,7 @@ class ResourceCard extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: textColor ?? Colors.white,
                   ),
                 ),
               ),

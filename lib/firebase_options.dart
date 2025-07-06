@@ -72,5 +72,4 @@ class DefaultFirebaseOptions {
     storageBucket: 're-source-1c2a1.firebasestorage.app',
     iosBundleId: 'com.example.reSource',
   );
-
 }
