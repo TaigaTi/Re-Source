@@ -10,6 +10,9 @@ import 'package:re_source/widgets/custom_drawer.dart';
 import 'dart:math';
 import 'package:re_source/colors.dart';
 import 'package:re_source/widgets/searchable_dropdown.dart';
+import 'package:http/http.dart' as http;
+import 'package:html/dom.dart' as html_dom;
+import 'package:html/parser.dart' as html_parser;
 
 class EditResource extends StatefulWidget {
   final String? link;
@@ -31,7 +34,12 @@ class _EditResourceState extends State<EditResource> {
     super.initState();
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
+
     _fetchCategories();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _populateMetadataFromUrl();
+    });
   }
 
   @override
@@ -39,6 +47,60 @@ class _EditResourceState extends State<EditResource> {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<Map<String, String>> fetchUrlMetadata(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final html_dom.Document document = html_parser.parse(response.body);
+
+        final html_dom.Element? titleTag = document.querySelector('title');
+        final html_dom.Element? descriptionTag = document.querySelector(
+          'meta[name="description"]',
+        );
+
+        final titleText = titleTag?.text ?? '';
+        final descriptionContent = descriptionTag?.attributes['content'] ?? '';
+
+        setState(() {
+          _titleController.text = titleText;
+          _descriptionController.text = descriptionContent;
+        });
+
+        return {'title': titleText, 'description': descriptionContent};
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to load URL metadata.')),
+          );
+        }
+        return {};
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error fetching metadata: $e')));
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> _populateMetadataFromUrl() async {
+    if (widget.link == null || widget.link!.isEmpty) return;
+
+    final metadata = await fetchUrlMetadata(widget.link!);
+    if (mounted && metadata.isNotEmpty) {
+      setState(() {
+        if (_titleController.text.isEmpty) {
+          _titleController.text = metadata['title'] ?? '';
+        }
+        if (_descriptionController.text.isEmpty) {
+          _descriptionController.text = metadata['description'] ?? '';
+        }
+      });
+    }
   }
 
   Future<void> _fetchCategories() async {

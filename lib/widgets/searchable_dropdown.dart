@@ -19,8 +19,7 @@ class SearchableCategoryDropdown extends StatefulWidget {
       _SearchableCategoryDropdownState();
 }
 
-class _SearchableCategoryDropdownState
-    extends State<SearchableCategoryDropdown> {
+class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final LayerLink _layerLink = LayerLink();
