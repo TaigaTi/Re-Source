@@ -93,7 +93,7 @@ class CategoryState extends State<Category> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 BackTitle(title: widget.name ?? "Untitled"),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
                 SearchBar(
                   onChanged: (value) {},
                   hintText: "Looking for something?",
@@ -114,7 +114,7 @@ class CategoryState extends State<Category> {
                   ),
                   elevation: WidgetStateProperty.all(0),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   height: 550,

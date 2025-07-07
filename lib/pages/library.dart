@@ -73,130 +73,131 @@ class LibraryState extends State<Library> {
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(30, 20, 30, 50), // This padding applies to the whole content area
-          child: Column(
-            children: [
-              // Fixed elements at the top (Title and Search Bar)
-              Container(
-                padding: EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(color: Colors.white),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Library",
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.w500,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(30, 20, 30, 50), // This padding applies to the whole content area
+            child: Column(
+              children: [
+                // Fixed elements at the top (Title and Search Bar)
+                Container(
+                  padding: EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(color: Colors.white),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Library",
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(color: Colors.white),
-                padding: EdgeInsets.only(bottom: 20, top: 10),
-                child: SearchBar(
-                  onChanged: (value) {},
-                  hintText: "Looking for something?",
-                  leading: const Icon(Icons.search),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50.0),
-                      side: const BorderSide(
-                        color: Color.fromRGBO(233, 233, 233, 1.0),
-                      ),
-                    ),
-                  ),
-                  backgroundColor: WidgetStateProperty.all(
-                    const Color.fromRGBO(233, 233, 233, 1.0),
-                  ),
-                  padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
-                  ),
-                  elevation: WidgetStateProperty.all(0),
-                ),
-              ),
-
-              // Scrollable content (Categories)
-              Expanded( // This Expanded widget ensures the SingleChildScrollView takes remaining space
-                child: SingleChildScrollView(
-                  child: FutureBuilder<List<Map<String, dynamic>>>(
-                    future: fetchCategories(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text(
-                            'Failed to load categories. Please try again. Error: ${snapshot.error}',
-                          ),
-                        );
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            'No categories found. Start by adding one!',
-                          ),
-                        );
-                      } else {
-                        final categories = snapshot.data!;
-                        return ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(), // Disable inner ListView scrolling
-                          shrinkWrap: true, // Make ListView only take up needed space
-                          itemCount: categories.length,
-                          itemBuilder: (context, index) {
-                            final category = categories[index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 8.0,
-                                horizontal: 0.0,
-                              ),
-                              child: CategoryCard(category: category),
-                            );
-                          },
-                        );
-                      }
-                    },
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20), 
-              Container(
-                decoration: BoxDecoration(color: Colors.white),
-                padding: const EdgeInsets.only(top: 55),
-                child: FilledButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const NewResource(),
-                        transitionDuration: Duration.zero,
-                        reverseTransitionDuration: Duration.zero,
-                      ),
-                    );
-                  },
-                  style: ButtonStyle(
-                    minimumSize: WidgetStateProperty.all(
-                      const Size(double.infinity, 45),
-                    ),
+                Container(
+                  decoration: BoxDecoration(color: Colors.white),
+                  padding: EdgeInsets.only(bottom: 20, top: 10),
+                  child: SearchBar(
+                    onChanged: (value) {},
+                    hintText: "Looking for something?",
+                    leading: const Icon(Icons.search),
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(50.0),
+                        side: const BorderSide(
+                          color: Color.fromRGBO(233, 233, 233, 1.0),
+                        ),
                       ),
                     ),
                     backgroundColor: WidgetStateProperty.all(
-                      const Color.fromARGB(255, 87, 175, 161),
+                      const Color.fromRGBO(233, 233, 233, 1.0),
                     ),
-                  ),
-                  child: const Text(
-                    "Add Resource",
-                    style: TextStyle(fontSize: 16),
+                    padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+                    ),
+                    elevation: WidgetStateProperty.all(0),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(
+                  height: 475,
+                  child: SingleChildScrollView(
+                      child: FutureBuilder<List<Map<String, dynamic>>>(
+                        future: fetchCategories(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text(
+                                'Failed to load categories. Please try again. Error: ${snapshot.error}',
+                              ),
+                            );
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Center(
+                              child: Text(
+                                'No categories found. Start by adding one!',
+                              ),
+                            );
+                          } else {
+                            final categories = snapshot.data!;
+                            return ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(), // Disable inner ListView scrolling
+                              shrinkWrap: true, // Make ListView only take up needed space
+                              itemCount: categories.length,
+                              itemBuilder: (context, index) {
+                                final category = categories[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                    horizontal: 0.0,
+                                  ),
+                                  child: CategoryCard(category: category),
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                ),
+                const SizedBox(height: 15), 
+                Container(
+                  decoration: BoxDecoration(color: Colors.white),
+                  padding: const EdgeInsets.only(top: 55),
+                  child: FilledButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              const NewResource(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                        ),
+                      );
+                    },
+                    style: ButtonStyle(
+                      minimumSize: WidgetStateProperty.all(
+                        const Size(double.infinity, 45),
+                      ),
+                      shape: WidgetStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      backgroundColor: WidgetStateProperty.all(
+                        const Color.fromARGB(255, 87, 175, 161),
+                      ),
+                    ),
+                    child: const Text(
+                      "Add Resource",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -305,10 +305,10 @@ class HomeState extends State<Home> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
-                  height: 475,
+                  height: 470,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
