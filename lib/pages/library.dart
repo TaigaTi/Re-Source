@@ -6,7 +6,7 @@ import 'package:re_source/pages/new_resource.dart';
 import 'package:re_source/widgets/category_card.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // Import Crashlytics
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 class Library extends StatefulWidget {
   const Library({super.key});
@@ -24,9 +24,9 @@ class LibraryState extends State<Library> {
 
     if (user == null) {
       if (mounted) {
-        Navigator.of(
-          context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => const Login()));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const Login()),
+        );
       }
       FirebaseCrashlytics.instance.recordError(
         Exception('Attempt to access Library while not logged in.'),
@@ -38,7 +38,7 @@ class LibraryState extends State<Library> {
     }
 
     try {
-      final QuerySnapshot<Map<String, dynamic>> snapshot = await database
+      final snapshot = await database
           .collection('users')
           .doc(user.uid)
           .collection('categories')
@@ -46,12 +46,10 @@ class LibraryState extends State<Library> {
 
       return snapshot.docs.map((doc) {
         final data = doc.data();
-        final String categoryName =
-            (data['name'] as String?) ?? 'Untitled Category';
+        final categoryName = (data['name'] as String?) ?? 'Untitled Category';
         final int? colorValue = data['color'];
-        final Color categoryColor = colorValue != null
-            ? Color(colorValue)
-            : Colors.grey;
+        final categoryColor =
+            colorValue != null ? Color(colorValue) : Colors.grey;
 
         return {"id": doc.id, "name": categoryName, "color": categoryColor};
       }).toList();
@@ -72,33 +70,63 @@ class LibraryState extends State<Library> {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(30, 20, 30, 50), // This padding applies to the whole content area
-            child: Column(
-              children: [
-                // Fixed elements at the top (Title and Search Bar)
-                Container(
-                  padding: EdgeInsets.only(bottom: 10),
-                  decoration: BoxDecoration(color: Colors.white),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Library",
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 130.0, bottom: 80.0),
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: fetchCategories(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Failed to load categories. Please try again.\nError: ${snapshot.error}',
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                    child: Text('No categories found. Start by adding one!'),
+                  );
+                } else {
+                  final categories = snapshot.data!;
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: CategoryCard(category: category),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ),
+
+          // Fixed top section
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(30, 20, 30, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Library",
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                Container(
-                  decoration: BoxDecoration(color: Colors.white),
-                  padding: EdgeInsets.only(bottom: 20, top: 10),
-                  child: SearchBar(
+                  const SizedBox(height: 10),
+                  SearchBar(
                     onChanged: (value) {},
                     hintText: "Looking for something?",
                     leading: const Icon(Icons.search),
@@ -114,92 +142,58 @@ class LibraryState extends State<Library> {
                       const Color.fromRGBO(233, 233, 233, 1.0),
                     ),
                     padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+                      const EdgeInsets.symmetric(
+                        horizontal: 15.0,
+                        vertical: 8.0,
+                      ),
                     ),
                     elevation: WidgetStateProperty.all(0),
                   ),
-                ),
-                SizedBox(
-                  height: 475,
-                  child: SingleChildScrollView(
-                      child: FutureBuilder<List<Map<String, dynamic>>>(
-                        future: fetchCategories(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Text(
-                                'Failed to load categories. Please try again. Error: ${snapshot.error}',
-                              ),
-                            );
-                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(
-                              child: Text(
-                                'No categories found. Start by adding one!',
-                              ),
-                            );
-                          } else {
-                            final categories = snapshot.data!;
-                            return ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(), // Disable inner ListView scrolling
-                              shrinkWrap: true, // Make ListView only take up needed space
-                              itemCount: categories.length,
-                              itemBuilder: (context, index) {
-                                final category = categories[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0,
-                                    horizontal: 0.0,
-                                  ),
-                                  child: CategoryCard(category: category),
-                                );
-                              },
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                ),
-                const SizedBox(height: 15), 
-                Container(
-                  decoration: BoxDecoration(color: Colors.white),
-                  padding: const EdgeInsets.only(top: 55),
-                  child: FilledButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) =>
-                              const NewResource(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
-                    },
-                    style: ButtonStyle(
-                      minimumSize: WidgetStateProperty.all(
-                        const Size(double.infinity, 45),
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      backgroundColor: WidgetStateProperty.all(
-                        const Color.fromARGB(255, 87, 175, 161),
-                      ),
-                    ),
-                    child: const Text(
-                      "Add Resource",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+
+          // Fixed bottom button
+          Positioned(
+            bottom: 0,
+            left: 30,
+            right: 30,
+            child: Container(
+              decoration: BoxDecoration(color: Colors.white),
+              padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 70.0),
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const NewResource(),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                },
+                style: ButtonStyle(
+                  minimumSize:
+                      WidgetStateProperty.all(const Size(double.infinity, 45)),
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  backgroundColor: WidgetStateProperty.all(
+                    const Color.fromARGB(255, 87, 175, 161),
+                  ),
+                ),
+                child: const Text(
+                  "Add Resource",
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
