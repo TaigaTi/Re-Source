@@ -50,40 +50,62 @@ class _EditResourceState extends State<EditResource> {
   }
 
   Future<Map<String, String>> fetchUrlMetadata(String url) async {
+    String ensureProtocol(String url, String protocol) {
+      return url.startsWith('http://') || url.startsWith('https://')
+          ? url.replaceFirst(RegExp(r'^https?://'), '$protocol://')
+          : '$protocol://$url';
+    }
+
+    String httpsUrl = ensureProtocol(url, 'https');
+    String httpUrl = ensureProtocol(url, 'http');
+    
+    http.Response? response;
+
     try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        final html_dom.Document document = html_parser.parse(response.body);
-
-        final html_dom.Element? titleTag = document.querySelector('title');
-        final html_dom.Element? descriptionTag = document.querySelector(
-          'meta[name="description"]',
-        );
-
-        final titleText = titleTag?.text ?? '';
-        final descriptionContent = descriptionTag?.attributes['content'] ?? '';
-
-        setState(() {
-          _titleController.text = titleText;
-          _descriptionController.text = descriptionContent;
-        });
-
-        return {'title': titleText, 'description': descriptionContent};
-      } else {
+      response = await http.get(Uri.parse(httpsUrl));
+      if (response.statusCode != 200) {
+        response = await http.get(Uri.parse(httpUrl));
+      }
+    } catch (_) {
+      try {
+        response = await http.get(Uri.parse(httpUrl));
+      } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to load URL metadata.')),
+            SnackBar(content: Text('Error fetching metadata: $e')),
           );
         }
-        return {};
+        rethrow;
       }
-    } catch (e) {
+    }
+
+    if (response.statusCode == 200) {
+      final html_dom.Document document = html_parser.parse(response.body);
+
+      final html_dom.Element? titleTag = document.querySelector('title');
+      final html_dom.Element? descriptionTag = document.querySelector(
+        'meta[name="description"]',
+      );
+
+      final String titleText = titleTag?.text.trim() ?? '';
+      final String descriptionText =
+          descriptionTag?.attributes['content']?.trim() ?? '';
+
+      if (mounted) {
+        setState(() {
+          _titleController.text = titleText;
+          _descriptionController.text = descriptionText;
+        });
+      }
+
+      return {'title': titleText, 'description': descriptionText};
+    } else {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error fetching metadata: $e')));
+        ).showSnackBar(SnackBar(content: Text('Failed to load URL metadata.')));
       }
-      rethrow;
+      return {};
     }
   }
 
