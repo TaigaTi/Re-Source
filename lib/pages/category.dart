@@ -117,7 +117,7 @@ class CategoryState extends State<Category> {
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
-                  height: 550,
+                  height: 500,
                   child: FutureBuilder<List<Map<String, dynamic>>>(
                     future: fetchResources(),
                     builder: (context, snapshot) {
