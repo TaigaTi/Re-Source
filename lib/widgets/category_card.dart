@@ -12,7 +12,11 @@ class CategoryCard extends StatelessWidget {
       tileColor: category['color'] as Color,
       title: Text(
         category['name'] as String,
-        style: const TextStyle(color: Colors.white, fontSize: 16),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
         textAlign: TextAlign.center,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
