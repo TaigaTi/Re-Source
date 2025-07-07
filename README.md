@@ -45,6 +45,8 @@ Currently in the early development stage!
 
 ## 💡 Inspiration
 
-Re-Source was born out of a real need: I constantly saved links — articles, tools, videos, and notes — only to forget about them or lose track entirely. My old system? Sending them to myself on WhatsApp. It worked… until it didn’t. Important links got buried, and the ones I actually needed were frustratingly hard to find.
+For the longest time, my system for saving important links was… WhatsApp. 😅
 
-This app is my solution to that chaos — a smarter, more intentional way to capture and organize links so they’re not just saved, but actually useful when I need them most.
+I'd send articles, tools, and resources to myself which I thought was an easy way to save things for later. Unfortunately, while "saving" these links was easy, finding them later was always a nightmare. 
+
+So I started building Re-Source — a smarter, more intentional way to quickly save and organize links📚
