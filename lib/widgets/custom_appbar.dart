@@ -14,10 +14,19 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       actions: [
         Builder(
-          builder: (context) => IconButton(
-            onPressed: Scaffold.of(context).openDrawer,
-            icon: const Icon(Icons.menu),
-            color: Colors.black87, // optional: color tweak
+          builder: (context) => Row(
+            children: [
+              const CircleAvatar(
+                radius: 12,
+                backgroundColor: Colors.transparent,
+                backgroundImage: AssetImage("assets/images/profile.png"),
+              ),
+              IconButton(
+                onPressed: Scaffold.of(context).openDrawer,
+                icon: const Icon(Icons.menu),
+                color: Colors.black87, // optional: color tweak
+              ),
+            ],
           ),
         ),
       ],
