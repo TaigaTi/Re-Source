@@ -198,6 +198,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 5),
             Card(
+              color: Color.fromARGB(255, 233, 233, 233),
               child: Padding(
                 padding: const EdgeInsets.all(30.0),
                 child: Column(
