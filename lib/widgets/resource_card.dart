@@ -72,7 +72,7 @@ class ResourceCard extends StatelessWidget {
                     // Title text
                     Flexible(
                       child: Text(
-                        "Five Roads Meet Under One Moon My Dear",
+                        title,
                         maxLines: 2,
                         textAlign: TextAlign.center,
                         style: TextStyle(
