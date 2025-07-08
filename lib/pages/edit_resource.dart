@@ -374,6 +374,7 @@ class _EditResourceState extends State<EditResource> {
                           const SizedBox(height: 5),
                           TextField(
                             controller: _titleController,
+                            maxLength: 35,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white,

@@ -23,7 +23,7 @@ class ResourceCard extends StatelessWidget {
     this.categoryColor,
     this.textColor,
     this.backgroundColor,
-    required this.indicator, 
+    required this.indicator,
   });
 
   @override
@@ -33,12 +33,12 @@ class ResourceCard extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: Container(
-          padding: const EdgeInsets.all(15), 
+          padding: const EdgeInsets.all(15),
           child: Column(
-            mainAxisSize: MainAxisSize.min, 
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                decoration: const BoxDecoration( 
+                decoration: const BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                 ),
                 clipBehavior: Clip.antiAlias,
@@ -50,32 +50,35 @@ class ResourceCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
 
-              Center( 
+              Center(
                 child: Row(
-                  mainAxisSize: MainAxisSize.min, 
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Visibility(
-                      visible: indicator, 
+                      visible: indicator,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 5.0),
+                        padding: const EdgeInsets.only(right: 5.0, top: 5),
                         child: Container(
-                          width: 9, 
-                          height: 9, 
+                          width: 9,
+                          height: 9,
                           decoration: BoxDecoration(
-                            color: categoryColor, 
+                            color: categoryColor,
                             shape: BoxShape.circle,
                           ),
                         ),
                       ),
                     ),
                     // Title text
-                    Flexible( 
+                    Flexible(
                       child: Text(
-                        title,
+                        "Five Roads Meet Under One Moon My Dear",
+                        maxLines: 2,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: textColor ?? Colors.white,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
