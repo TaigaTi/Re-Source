@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:re_source/pages/resource_details.dart';
 
 class ResourceCard extends StatelessWidget {
   final String id;
@@ -28,65 +29,78 @@ class ResourceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: backgroundColor ?? categoryColor,
-      child: SizedBox(
-        width: double.infinity,
-        child: Container(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                decoration: const BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const ResourceDetails(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: Card(
+        color: backgroundColor ?? categoryColor,
+        child: SizedBox(
+          width: double.infinity,
+          child: Container(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image(
+                    image: AssetImage("assets/images/success.png"),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: Image(
-                  image: AssetImage("assets/images/success.png"),
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              Center(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Visibility(
-                      visible: indicator,
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 5.0, top: 5),
-                        child: Container(
-                          width: 9,
-                          height: 9,
-                          decoration: BoxDecoration(
-                            color: categoryColor,
-                            shape: BoxShape.circle,
+                Center(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Visibility(
+                        visible: indicator,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 5.0, top: 5),
+                          child: Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(
+                              color: categoryColor,
+                              shape: BoxShape.circle,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    // Title text
-                    Flexible(
-                      child: Text(
-                        title,
-                        maxLines: 2,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: textColor ?? Colors.white,
-                          overflow: TextOverflow.ellipsis,
+                      // Title text
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: textColor ?? Colors.white,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(width: 8),
-                  ],
+                      SizedBox(width: 8),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
