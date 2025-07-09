@@ -87,26 +87,53 @@ class ResourceDetails extends StatelessWidget {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: FilledButton(
-                    onPressed: () {},
-                    style: ButtonStyle(
-                      minimumSize: WidgetStateProperty.all(
-                        const Size(double.infinity, 45),
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      backgroundColor: WidgetStateProperty.all(
-                        const Color.fromARGB(255, 87, 175, 161),
+                SizedBox(height: 25),
+                FilledButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.link),
+                  label: const Text(
+                    "Visit Resource Name",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  style: ButtonStyle(
+                    minimumSize: WidgetStateProperty.all(
+                      const Size(double.infinity, 45),
+                    ),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      "Visit Resource Name",
-                      style: TextStyle(fontSize: 16),
+                    backgroundColor: WidgetStateProperty.all(
+                      const Color.fromARGB(255, 87, 175, 161),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 15),
+                FilledButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Color.fromARGB(255, 110, 110, 110),
+                  ),
+                  label: const Text(
+                    "Edit Resource",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color.fromARGB(255, 110, 110, 110),
+                    ),
+                  ),
+                  style: ButtonStyle(
+                    minimumSize: WidgetStateProperty.all(
+                      const Size(double.infinity, 45),
+                    ),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    backgroundColor: WidgetStateProperty.all(
+                      const Color.fromARGB(255, 233, 233, 233),
                     ),
                   ),
                 ),
