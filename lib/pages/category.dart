@@ -147,13 +147,13 @@ class CategoryState extends State<Category> {
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 ResourceDetails(
-                  // resourceId: resource['id'] as String,
-                  // title: title,
-                  // description: description,
-                  // link: resource['link'] as String? ?? '',
-                  // categoryId: widget.id ?? '',
-                  // categoryName: categoryName,
-                  // categoryColor: categoryColor,
+                  resourceId: resource['id'] as String,
+                  title: title,
+                  description: description,
+                  link: resource['link'] as String? ?? '',
+                  categoryId: widget.id ?? '',
+                  categoryName: categoryName,
+                  categoryColor: categoryColor,
                 ),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,

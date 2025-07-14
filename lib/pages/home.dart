@@ -148,13 +148,13 @@ class HomeState extends State<Home> {
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 ResourceDetails(
-                  // resourceId: resource['resourceId'] as String,
-                  // title: title,
-                  // description: description,
-                  // link: resource['link'] as String? ?? '',
-                  // categoryId: resource['categoryId'] as String,
-                  // categoryName: categoryName,
-                  // categoryColor: categoryColor,
+                  resourceId: resource['resourceId'] as String,
+                  title: title,
+                  description: description,
+                  link: resource['link'] as String? ?? '',
+                  categoryId: resource['categoryId'] as String,
+                  categoryName: categoryName,
+                  categoryColor: categoryColor,
                 ),
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,

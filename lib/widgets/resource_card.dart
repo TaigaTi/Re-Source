@@ -35,7 +35,16 @@ class ResourceCard extends StatelessWidget {
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const ResourceDetails(),
+                ResourceDetails(
+                  resourceId: id,
+                  title: title,
+                  description: description ?? '',
+                  link: link as String? ?? '',
+                  categoryId: categoryId ?? '',
+                  categoryName: categoryName ?? '',
+                  categoryColor: categoryColor ?? Color.fromARGB(255, 233, 233, 233),
+                ),
+
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),

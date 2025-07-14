@@ -4,7 +4,24 @@ import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 
 class ResourceDetails extends StatelessWidget {
-  const ResourceDetails({super.key});
+  final String resourceId;
+  final String title;
+  final String description;
+  final String link;
+  final String categoryId;
+  final String categoryName;
+  final Color categoryColor;
+
+  const ResourceDetails({
+    super.key,
+    required this.resourceId,
+    required this.title,
+    required this.description,
+    required this.link,
+    required this.categoryId,
+    required this.categoryName,
+    required this.categoryColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,14 +38,13 @@ class ResourceDetails extends StatelessWidget {
             ),
             child: Column(
               children: [
-                BackTitle(title: "Resource Name"),
-                SizedBox(height: 30),
+                BackTitle(title: title),
+                const SizedBox(height: 30),
                 Card(
-                  color: Color.fromARGB(255, 233, 233, 233),
+                  color: const Color.fromARGB(255, 233, 233, 233),
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
                     child: Column(
-                      spacing: 15,
                       children: [
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,57 +59,60 @@ class ResourceDetails extends StatelessWidget {
                                 width: 9,
                                 height: 9,
                                 decoration: BoxDecoration(
-                                  color: Colors.blue,
+                                  color: categoryColor,
                                   shape: BoxShape.circle,
                                 ),
                               ),
                             ),
-                            // Title text
+                            // Category name text
                             Flexible(
                               child: Text(
-                                "Category",
+                                categoryName,
                                 maxLines: 1,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w400,
                                   color: Colors.black,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                           ],
                         ),
+                        SizedBox(height: 10),
                         Container(
                           decoration: const BoxDecoration(
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: Image(
-                            image: AssetImage("assets/images/success.png"),
+                            image: AssetImage(
+                              "assets/images/success.png",
+                            ), // Replace with actual image if available
                             width: double.infinity,
                             fit: BoxFit.cover,
                           ),
                         ),
-                        Column(
-                          spacing: 5,
-                          children: [
-                            Text(
-                              "Lorem ipsum dolor something or the other idk what it is tbh but we push. If you've read all of this, you're so cool, I hope you have a great day!",
-                            ),
-                          ],
-                        ),
+                        const SizedBox(height: 15),
+
+                        Text(description, style: const TextStyle(fontSize: 15)),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 25),
+                const SizedBox(height: 25),
                 FilledButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    if (link.isNotEmpty) {
+                      // Open the link using url_launcher or similar
+                      // launchUrl(Uri.parse(link));
+                    }
+                  },
                   icon: const Icon(Icons.link),
-                  label: const Text(
-                    "Visit Resource Name",
-                    style: TextStyle(fontSize: 16),
+                  label: Text(
+                    "Visit $title",
+                    style: const TextStyle(fontSize: 16),
                   ),
                   style: ButtonStyle(
                     minimumSize: WidgetStateProperty.all(
@@ -109,9 +128,11 @@ class ResourceDetails extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 FilledButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Implement edit resource functionality
+                  },
                   icon: const Icon(
                     Icons.edit,
                     color: Color.fromARGB(255, 110, 110, 110),
