@@ -205,16 +205,16 @@ class _ProfilePageState extends State<ProfilePage> {
             Card(
               color: Color.fromARGB(255, 233, 233, 233),
               child: Padding(
-                padding: const EdgeInsets.all(30.0),
+                padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 50.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const CircleAvatar(
                       radius: 75,
                       backgroundColor: Colors.transparent,
-                      backgroundImage: AssetImage("assets/images/success.png"),
+                      backgroundImage: AssetImage("assets/images/profile.png"),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     _isLoading
                         ? const CircularProgressIndicator()
                         : Text(
@@ -225,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               color: Colors.black87,
                             ),
                           ),
-                    const SizedBox(height: 80),
+                    const SizedBox(height: 70),
                     // Logout Button
                     ElevatedButton(
                       onPressed: _logout,
