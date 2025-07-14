@@ -16,6 +16,74 @@ class Library extends StatefulWidget {
 }
 
 class LibraryState extends State<Library> {
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  bool _isLoading = false;
+  List<Map<String, dynamic>> _allCategories = [];
+  List<Map<String, dynamic>> _filteredCategories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final categories = await fetchCategories();
+      setState(() {
+        _allCategories = categories;
+        _filteredCategories = categories;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _allCategories = [];
+        _filteredCategories = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _onSearchChanged() async {
+    final query = _searchController.text.trim().toLowerCase();
+    setState(() {
+      _isSearching = query.isNotEmpty;
+      _isLoading = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 180));
+
+    if (query.isEmpty) {
+      setState(() {
+        _filteredCategories = _allCategories;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final filtered = _allCategories.where((cat) {
+      final name = (cat['name'] as String? ?? '').toLowerCase();
+      return name.contains(query);
+    }).toList();
+
+    setState(() {
+      _filteredCategories = filtered;
+      _isLoading = false;
+    });
+  }
+
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final FirebaseFirestore database = FirebaseFirestore.instance;
     final FirebaseAuth auth = FirebaseAuth.instance;
@@ -64,6 +132,14 @@ class LibraryState extends State<Library> {
     }
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() {
+      _filteredCategories = _allCategories;
+      _isSearching = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,37 +150,27 @@ class LibraryState extends State<Library> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 130.0, bottom: 80.0),
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: fetchCategories(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Failed to load categories. Please try again.\nError: ${snapshot.error}',
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No categories found. Start by adding one!'),
-                  );
-                } else {
-                  final categories = snapshot.data!;
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: CategoryCard(category: category),
-                      );
-                    },
-                  );
-                }
-              },
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredCategories.isEmpty
+                    ? Center(
+                        child: Text(
+                          _isSearching
+                              ? 'No matching categories found.'
+                              : 'No categories found. Start by adding one!',
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        itemCount: _filteredCategories.length,
+                        itemBuilder: (context, index) {
+                          final category = _filteredCategories[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: CategoryCard(category: category),
+                          );
+                        },
+                      ),
           ),
 
           // Fixed top section
@@ -127,9 +193,22 @@ class LibraryState extends State<Library> {
                   ),
                   const SizedBox(height: 10),
                   SearchBar(
+                    controller: _searchController,
                     onChanged: (value) {},
                     hintText: "Looking for something?",
                     leading: const Icon(Icons.search),
+                    trailing: [
+                      _searchController.text.isNotEmpty
+                          ? InkWell(
+                              onTap: _clearSearch,
+                              borderRadius: BorderRadius.circular(50),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(Icons.close, size: 18, color: Colors.grey[600]),
+                              ),
+                            )
+                          : const SizedBox(width: 34, height: 34),
+                    ],
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50.0),
@@ -161,7 +240,7 @@ class LibraryState extends State<Library> {
             right: 30,
             child: Container(
               decoration: BoxDecoration(color: Colors.white),
-              padding: EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 70.0),
+              padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 70.0),
               child: FilledButton(
                 onPressed: () {
                   Navigator.push(
