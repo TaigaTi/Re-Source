@@ -6,6 +6,7 @@ import 'package:re_source/pages/category.dart';
 import 'package:re_source/pages/library.dart';
 import 'package:re_source/pages/login.dart';
 import 'package:re_source/pages/new_resource.dart';
+import 'package:re_source/pages/resource_details.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:re_source/widgets/resource_card.dart';
@@ -18,6 +19,287 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
+  List<Map<String, dynamic>> _allResources = [];
+  List<Map<String, dynamic>> _filteredResources = [];
+  bool _isSearching = false;
+  OverlayEntry? _overlayEntry;
+  final GlobalKey _searchBarKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+    _searchFocusNode.addListener(_onFocusChanged);
+    _loadAllResources();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _searchFocusNode.removeListener(_onFocusChanged);
+    _searchFocusNode.dispose();
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.toLowerCase().trim();
+    if (query.isEmpty) {
+      setState(() {
+        _filteredResources = [];
+        _isSearching = false;
+      });
+      _removeOverlay();
+    } else {
+      setState(() {
+        _isSearching = true;
+        _filteredResources = _allResources.where((resource) {
+          final title = (resource['title'] as String? ?? '').toLowerCase();
+          final description = (resource['description'] as String? ?? '')
+              .toLowerCase();
+          final categoryName = (resource['categoryName'] as String? ?? '')
+              .toLowerCase();
+          return title.contains(query) ||
+              description.contains(query) ||
+              categoryName.contains(query);
+        }).toList();
+      });
+      _showOverlay();
+    }
+  }
+
+  void _onFocusChanged() {
+    if (!_searchFocusNode.hasFocus) {
+      // Delay removal to allow tap on search results
+      Future.delayed(const Duration(milliseconds: 150), () {
+        _removeOverlay();
+        setState(() {
+          _isSearching = false;
+        });
+      });
+    }
+  }
+
+  void _showOverlay() {
+    _removeOverlay();
+
+    if (_filteredResources.isEmpty) return;
+
+    _overlayEntry = OverlayEntry(builder: (context) => _buildSearchOverlay());
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  Widget _buildSearchOverlay() {
+    return Positioned(
+      top: _getSearchBarPosition() + 70, // Position below search bar
+      left: 30,
+      right: 30,
+      child: Material(
+        elevation: 3,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          constraints: const BoxConstraints(maxHeight: 800),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 244, 244, 244),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: _filteredResources.length,
+            separatorBuilder: (context, index) => const Divider(
+              height: 1,
+              color: Color.fromRGBO(207, 207, 207, 1),
+            ),
+            itemBuilder: (context, index) {
+              final resource = _filteredResources[index];
+              return _buildSearchResultItem(resource);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResultItem(Map<String, dynamic> resource) {
+    final title = resource['title'] as String? ?? 'Untitled Resource';
+    final description = resource['description'] as String? ?? 'No description';
+    final categoryName = resource['categoryName'] as String? ?? 'Uncategorized';
+    final categoryColor = resource['categoryColor'] as Color? ?? Colors.grey;
+
+    return InkWell(
+      onTap: () {
+        _removeOverlay();
+        _searchController.clear();
+        _searchFocusNode.unfocus();
+
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ResourceDetails(
+                  // resourceId: resource['resourceId'] as String,
+                  // title: title,
+                  // description: description,
+                  // link: resource['link'] as String? ?? '',
+                  // categoryId: resource['categoryId'] as String,
+                  // categoryName: categoryName,
+                  // categoryColor: categoryColor,
+                ),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Category indicator
+            Padding(
+              padding: const EdgeInsets.only(right: 12, top: 4),
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: categoryColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
+                  // Category
+                  Text(
+                    'in $categoryName',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: categoryColor,
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Description
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color.fromARGB(255, 110, 110, 110),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  double _getSearchBarPosition() {
+    final RenderBox? renderBox =
+        _searchBarKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final position = renderBox.localToGlobal(Offset.zero);
+      return position.dy;
+    }
+    return 100; // Fallback position
+  }
+
+  Future<void> _loadAllResources() async {
+    try {
+      final resources = await fetchAllResources();
+      setState(() {
+        _allResources = resources;
+      });
+    } catch (e) {
+      print('Error loading resources: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAllResources() async {
+    final FirebaseFirestore database = FirebaseFirestore.instance;
+    final FirebaseAuth auth = FirebaseAuth.instance;
+
+    final User? user = auth.currentUser;
+
+    if (user == null) {
+      if (mounted) {
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => Login()));
+      }
+      throw Exception('User not logged in.');
+    }
+
+    List<Map<String, dynamic>> allResourcesWithCategoryInfo = [];
+
+    final QuerySnapshot<Map<String, dynamic>> categoriesSnapshot =
+        await database
+            .collection('users')
+            .doc(user.uid)
+            .collection('categories')
+            .get();
+
+    for (QueryDocumentSnapshot<Map<String, dynamic>> categoryDoc
+        in categoriesSnapshot.docs) {
+      final String categoryId = categoryDoc.id;
+      final String categoryName =
+          (categoryDoc.data()['name'] as String?) ?? 'Uncategorized';
+      final int? categoryColorValue = categoryDoc.data()['color'];
+      final Color categoryColor = categoryColorValue != null
+          ? Color(categoryColorValue)
+          : Colors.grey;
+
+      final QuerySnapshot<Map<String, dynamic>> resourcesSnapshot =
+          await categoryDoc.reference.collection('resources').get();
+
+      for (QueryDocumentSnapshot<Map<String, dynamic>> resourceDoc
+          in resourcesSnapshot.docs) {
+        final Map<String, dynamic> resourceData = resourceDoc.data();
+        allResourcesWithCategoryInfo.add({
+          ...resourceData,
+          'resourceId': resourceDoc.id,
+          'categoryId': categoryId,
+          'categoryName': categoryName,
+          'categoryColor': categoryColor,
+        });
+      }
+    }
+
+    return allResourcesWithCategoryInfo;
+  }
+
   Future<List<Map<String, dynamic>>> fetchCategories() async {
     final FirebaseFirestore database = FirebaseFirestore.instance;
     final FirebaseAuth auth = FirebaseAuth.instance;
@@ -159,7 +441,10 @@ class HomeState extends State<Home> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SearchBar(
-                  onChanged: (value) {},
+                  key: _searchBarKey,
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  onChanged: (value) {}, // Handler moved to listener
                   hintText: "Looking for something?",
                   leading: const Icon(Icons.search),
                   shape: WidgetStateProperty.all(
