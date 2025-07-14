@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:re_source/pages/profile.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
@@ -16,10 +17,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         Builder(
           builder: (context) => Row(
             children: [
-              const CircleAvatar(
-                radius: 12,
-                backgroundColor: Colors.transparent,
-                backgroundImage: AssetImage("assets/images/profile.png"),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const ProfilePage(),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                },
+                child: const CircleAvatar(
+                  radius: 12,
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: AssetImage("assets/images/profile.png"),
+                ),
               ),
               IconButton(
                 onPressed: Scaffold.of(context).openDrawer,
