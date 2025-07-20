@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:re_source/widgets/back_title.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ResourceDetails extends StatelessWidget {
   final String resourceId;
@@ -111,10 +112,16 @@ class ResourceDetails extends StatelessWidget {
                 ),
                 const SizedBox(height: 25),
                 FilledButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     if (link.isNotEmpty) {
-                      // Open the link using url_launcher or similar
-                      // launchUrl(Uri.parse(link));
+                      final uri = Uri.parse(link);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Could not launch $link')),
+                        );
+                      }
                     }
                   },
                   icon: const Icon(Icons.link),

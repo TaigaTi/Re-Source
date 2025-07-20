@@ -312,115 +312,141 @@ class _EditResourceState extends State<EditResource> {
   }
 
   Future<void> addResource() async {
-    final FirebaseFirestore database = FirebaseFirestore.instance;
-    final FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseFirestore database = FirebaseFirestore.instance;
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
-    final String title = _titleController.text.trim();
-    final String? categoryName = _selectedCategory;
-    final String description = _descriptionController.text.trim();
+  final String title = _titleController.text.trim();
+  final String? categoryName = _selectedCategory;
+  final String description = _descriptionController.text.trim();
 
-    if (title.isEmpty ||
-        categoryName == null ||
-        categoryName.isEmpty ||
-        description.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill in all fields.')),
-        );
-      }
-      return;
-    }
-
-    final User? user = auth.currentUser;
-
-    if (user == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You must be logged in to add resources.'),
-          ),
-        );
-        Navigator.of(
-          context,
-        ).pushReplacement(MaterialPageRoute(builder: (_) => const Login()));
-      }
-      return;
-    }
-
-    int getRandomCategoryColor() {
-      final Random random = Random();
-      int randomIndex = random.nextInt(colors.length);
-      return colors[randomIndex].toARGB32();
-    }
-
-    try {
-      String actualCategoryId;
-
-      final userCategoriesRef = database
-          .collection('users')
-          .doc(user.uid)
-          .collection('categories');
-
-      final existingCategories = await userCategoriesRef
-          .where('name', isEqualTo: categoryName)
-          .limit(1)
-          .get();
-
-      if (existingCategories.docs.isNotEmpty) {
-        actualCategoryId = existingCategories.docs.first.id;
-      } else {
-        final newCategoryDocRef = await userCategoriesRef.add({
-          'name': categoryName,
-          'createdAt': FieldValue.serverTimestamp(),
-          'color': getRandomCategoryColor(),
-        });
-        actualCategoryId = newCategoryDocRef.id;
-      }
-
-      final resourcesCollectionRef = userCategoriesRef
-          .doc(actualCategoryId)
-          .collection('resources');
-
-      String? imageUrlToSave = _imageUrl;
-      if (_pickedImageFile != null) {
-        imageUrlToSave = await _uploadImageIfNeeded();
-        if (imageUrlToSave == null) return; // Stop if upload failed
-      }
-
-      await resourcesCollectionRef.add({
-        'title': title,
-        'link': widget.link,
-        'description': description,
-        'image': imageUrlToSave ?? '',
-        'addedAt': FieldValue.serverTimestamp(),
-      });
-
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const SuccessPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero,
-          ),
-        );
-      }
-    } catch (e, stack) {
-      await FirebaseCrashlytics.instance.recordError(
-        e,
-        stack,
-        reason: 'Error adding new resource.',
-        fatal: false,
+  if (title.isEmpty ||
+      categoryName == null ||
+      categoryName.isEmpty ||
+      description.isEmpty) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields.')),
       );
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to add resource: $e')));
-      }
-      rethrow;
     }
+    return;
   }
+
+  final User? user = auth.currentUser;
+
+  if (user == null) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must be logged in to add resources.'),
+        ),
+      );
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const Login()));
+    }
+    return;
+  }
+
+  int getRandomCategoryColor() {
+    final Random random = Random();
+    int randomIndex = random.nextInt(colors.length);
+    return colors[randomIndex].toARGB32();
+  }
+
+  Future<String> ensureLinkProtocol(String? link) async {
+  if (link == null || link.isEmpty) return '';
+
+  if (link.startsWith('http://') || link.startsWith('https://')) {
+    return link;
+  }
+
+  final httpsUrl = Uri.parse('https://$link');
+  final httpUrl = Uri.parse('http://$link');
+
+  try {
+    final httpsResponse = await http.head(httpsUrl).timeout(const Duration(seconds: 2));
+    if (httpsResponse.statusCode < 400) return httpsUrl.toString();
+  } catch (_) {}
+
+  try {
+    final httpResponse = await http.head(httpUrl).timeout(const Duration(seconds: 2));
+    if (httpResponse.statusCode < 400) return httpUrl.toString();
+  } catch (_) {}
+
+  // If both fail, default to https
+  return httpsUrl.toString();
+}
+
+  try {
+    String actualCategoryId;
+
+    final userCategoriesRef = database
+        .collection('users')
+        .doc(user.uid)
+        .collection('categories');
+
+    final existingCategories = await userCategoriesRef
+        .where('name', isEqualTo: categoryName)
+        .limit(1)
+        .get();
+
+    if (existingCategories.docs.isNotEmpty) {
+      actualCategoryId = existingCategories.docs.first.id;
+    } else {
+      final newCategoryDocRef = await userCategoriesRef.add({
+        'name': categoryName,
+        'createdAt': FieldValue.serverTimestamp(),
+        'color': getRandomCategoryColor(),
+      });
+      actualCategoryId = newCategoryDocRef.id;
+    }
+
+    final resourcesCollectionRef = userCategoriesRef
+        .doc(actualCategoryId)
+        .collection('resources');
+
+    String? imageUrlToSave = _imageUrl;
+    if (_pickedImageFile != null) {
+      imageUrlToSave = await _uploadImageIfNeeded();
+      if (imageUrlToSave == null) return; // Stop if upload failed
+    }
+
+    final String linkToSave = ensureLinkProtocol(widget.link) as String;
+
+    await resourcesCollectionRef.add({
+      'title': title,
+      'link': linkToSave, 
+      'description': description,
+      'image': imageUrlToSave ?? '',
+      'addedAt': FieldValue.serverTimestamp(),
+    });
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const SuccessPage(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+    }
+  } catch (e, stack) {
+    await FirebaseCrashlytics.instance.recordError(
+      e,
+      stack,
+      reason: 'Error adding new resource.',
+      fatal: false,
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to add resource: $e')));
+    }
+    rethrow;
+  }
+}
 
   @override
   Widget build(BuildContext context) {
