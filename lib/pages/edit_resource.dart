@@ -411,7 +411,7 @@ class _EditResourceState extends State<EditResource> {
       if (imageUrlToSave == null) return; // Stop if upload failed
     }
 
-    final String linkToSave = ensureLinkProtocol(widget.link) as String;
+    final String linkToSave = await ensureLinkProtocol(widget.link);
 
     await resourcesCollectionRef.add({
       'title': title,

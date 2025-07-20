@@ -24,6 +24,7 @@ class BackTitle extends StatelessWidget {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w500,
+            overflow: TextOverflow.ellipsis
           ),
         ),
       ],

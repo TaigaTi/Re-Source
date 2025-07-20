@@ -126,7 +126,7 @@ class ResourceDetails extends StatelessWidget {
                   },
                   icon: const Icon(Icons.link),
                   label: Text(
-                    "Visit $title",
+                    "Visit Resource",
                     style: const TextStyle(fontSize: 16),
                   ),
                   style: ButtonStyle(
