@@ -7,6 +7,7 @@ class ResourceDetails extends StatelessWidget {
   final String resourceId;
   final String title;
   final String description;
+  final String? image;
   final String link;
   final String categoryId;
   final String categoryName;
@@ -18,6 +19,7 @@ class ResourceDetails extends StatelessWidget {
     required this.title,
     required this.description,
     required this.link,
+    this.image,
     required this.categoryId,
     required this.categoryName,
     required this.categoryColor,
@@ -86,13 +88,19 @@ class ResourceDetails extends StatelessWidget {
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
                           clipBehavior: Clip.antiAlias,
-                          child: Image(
-                            image: AssetImage(
-                              "assets/images/success.png",
-                            ), // Replace with actual image if available
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
+                          child: (image != null && image!.isNotEmpty && !image!.startsWith('/'))
+                              ? Image.network(
+                                  image!,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Image.asset("assets/images/success.png", fit: BoxFit.cover),
+                                )
+                              : Image.asset(
+                                  "assets/images/success.png",
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                         const SizedBox(height: 15),
 

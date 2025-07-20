@@ -27,6 +27,7 @@ class CategoryState extends State<Category> {
   final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey _searchBarKey = GlobalKey();
   OverlayEntry? _overlayEntry;
+  // ignore: unused_field
   bool _isSearching = false;
 
   List<Map<String, dynamic>> _allResources = [];
@@ -375,6 +376,7 @@ class CategoryState extends State<Category> {
                                   categoryName: widget.name,
                                   categoryColor: widget.color,
                                   indicator: false,
+                                  image: resourceData['image'] ?? '', // <-- Pass the image field
                                 );
                               },
                             );

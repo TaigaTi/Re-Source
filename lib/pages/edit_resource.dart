@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:re_source/pages/login.dart';
 import 'package:re_source/pages/success.dart';
 import 'package:re_source/widgets/back_title.dart';
@@ -13,6 +15,7 @@ import 'package:re_source/widgets/searchable_dropdown.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/dom.dart' as html_dom;
 import 'package:html/parser.dart' as html_parser;
+import 'dart:io';
 
 class EditResource extends StatefulWidget {
   final String? link;
@@ -28,6 +31,9 @@ class _EditResourceState extends State<EditResource> {
   late TextEditingController _descriptionController;
   String? _selectedCategory;
   List<Map<String, Object>> _categories = [];
+  XFile? _pickedImageFile;
+  String? _imageUrl;
+  bool _isUploadingImage = false;
 
   @override
   void initState() {
@@ -58,7 +64,7 @@ class _EditResourceState extends State<EditResource> {
 
     String httpsUrl = ensureProtocol(url, 'https');
     String httpUrl = ensureProtocol(url, 'http');
-    
+
     http.Response? response;
 
     try {
@@ -86,19 +92,30 @@ class _EditResourceState extends State<EditResource> {
       final html_dom.Element? descriptionTag = document.querySelector(
         'meta[name="description"]',
       );
+      final html_dom.Element? imageTag =
+          document.querySelector('meta[property="og:image"]') ??
+          document.querySelector('meta[name="twitter:image"]');
 
       final String titleText = titleTag?.text.trim() ?? '';
       final String descriptionText =
           descriptionTag?.attributes['content']?.trim() ?? '';
+      final String imageUrl = imageTag?.attributes['content']?.trim() ?? '';
 
       if (mounted) {
         setState(() {
           _titleController.text = titleText;
           _descriptionController.text = descriptionText;
+          if (imageUrl.isNotEmpty) {
+            _imageUrl = imageUrl;
+          }
         });
       }
 
-      return {'title': titleText, 'description': descriptionText};
+      return {
+        'title': titleText,
+        'description': descriptionText,
+        'image': imageUrl,
+      };
     } else {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -120,6 +137,9 @@ class _EditResourceState extends State<EditResource> {
         }
         if (_descriptionController.text.isEmpty) {
           _descriptionController.text = metadata['description'] ?? '';
+        }
+        if (_imageUrl == null && (metadata['image'] ?? '').isNotEmpty) {
+          _imageUrl = metadata['image'];
         }
       });
     }
@@ -237,6 +257,60 @@ class _EditResourceState extends State<EditResource> {
     }
   }
 
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+    setState(() {
+      _pickedImageFile = pickedFile;
+      _imageUrl = pickedFile.path;
+    });
+  }
+
+  Future<String?> _uploadImageIfNeeded() async {
+    if (_pickedImageFile == null) {
+      return _imageUrl;
+    } 
+
+    setState(() {
+      _isUploadingImage = true;
+    });
+
+    try {
+      final FirebaseStorage storage = FirebaseStorage.instance;
+      final String fileName =
+          'resource_images/${DateTime.now().millisecondsSinceEpoch}_${_pickedImageFile!.name}';
+      final Reference ref = storage.ref().child(fileName);
+
+      final UploadTask uploadTask = ref.putData(
+        await _pickedImageFile!.readAsBytes(),
+      );
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e, s) {
+      await FirebaseCrashlytics.instance.recordError(
+        e,
+        s,
+        reason: 'Failed to upload image.',
+        fatal: false,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
+      }
+      return null;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingImage = false;
+        });
+      }
+    }
+  }
+
   Future<void> addResource() async {
     final FirebaseFirestore database = FirebaseFirestore.instance;
     final FirebaseAuth auth = FirebaseAuth.instance;
@@ -307,10 +381,17 @@ class _EditResourceState extends State<EditResource> {
           .doc(actualCategoryId)
           .collection('resources');
 
+      String? imageUrlToSave = _imageUrl;
+      if (_pickedImageFile != null) {
+        imageUrlToSave = await _uploadImageIfNeeded();
+        if (imageUrlToSave == null) return; // Stop if upload failed
+      }
+
       await resourcesCollectionRef.add({
         'title': title,
         'link': widget.link,
         'description': description,
+        'image': imageUrlToSave ?? '',
         'addedAt': FieldValue.serverTimestamp(),
       });
 
@@ -472,8 +553,18 @@ class _EditResourceState extends State<EditResource> {
                                 ),
                               ),
                               TextButton(
-                                onPressed: () => {},
-                                child: const Text("Change Image"),
+                                onPressed: _isUploadingImage
+                                    ? null
+                                    : _pickImage,
+                                child: _isUploadingImage
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text("Change Image"),
                               ),
                             ],
                           ),
@@ -484,10 +575,26 @@ class _EditResourceState extends State<EditResource> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Image.asset(
-                              'assets/images/success.png',
-                              fit: BoxFit.cover,
-                            ),
+                            child: _pickedImageFile != null
+                                ? Image.file(
+                                    File(_pickedImageFile!.path),
+                                    fit: BoxFit.cover,
+                                  )
+                                : (_imageUrl != null && _imageUrl!.isNotEmpty
+                                      ? Image.network(
+                                          _imageUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Image.asset(
+                                                    'assets/images/success.png',
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                        )
+                                      : Image.asset(
+                                          'assets/images/success.png',
+                                          fit: BoxFit.cover,
+                                        )),
                           ),
                         ],
                       ),

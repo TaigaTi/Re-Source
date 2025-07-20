@@ -5,19 +5,21 @@ class ResourceCard extends StatelessWidget {
   final String id;
   final String title;
   final String link;
+  final String? image;
   final String? description;
   final String? categoryId;
   final String? categoryName;
   final Color? categoryColor;
   final Color? textColor;
   final Color? backgroundColor;
-  final bool indicator; // Controls the visibility of the circle indicator
+  final bool indicator; 
 
   const ResourceCard({
     super.key,
     required this.id,
     required this.title,
     required this.link,
+    this.image,
     required this.description,
     this.categoryId,
     this.categoryName,
@@ -40,6 +42,7 @@ class ResourceCard extends StatelessWidget {
                   title: title,
                   description: description ?? '',
                   link: link as String? ?? '',
+                  image: image,
                   categoryId: categoryId ?? '',
                   categoryName: categoryName ?? '',
                   categoryColor: categoryColor ?? Color.fromARGB(255, 233, 233, 233),
@@ -64,11 +67,19 @@ class ResourceCard extends StatelessWidget {
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: Image(
-                    image: AssetImage("assets/images/success.png"),
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  child: (image != null && image!.isNotEmpty && !image!.startsWith('/'))
+                      ? Image.network(
+                          image!,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Image.asset("assets/images/success.png", fit: BoxFit.cover),
+                        )
+                      : Image.asset(
+                          "assets/images/success.png",
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 const SizedBox(height: 10),
 

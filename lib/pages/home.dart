@@ -24,6 +24,8 @@ class HomeState extends State<Home> {
   final FocusNode _searchFocusNode = FocusNode();
   List<Map<String, dynamic>> _allResources = [];
   List<Map<String, dynamic>> _filteredResources = [];
+  
+  // ignore: unused_field
   bool _isSearching = false;
   OverlayEntry? _overlayEntry;
   final GlobalKey _searchBarKey = GlobalKey();
@@ -413,6 +415,7 @@ class HomeState extends State<Home> {
       final String description =
           (resource['description'] as String?) ?? 'No description';
       final String link = (resource['link'] as String?) ?? '';
+      final String image = (resource['image'] as String?) ?? '';
       final String categoryId = resource['categoryId'] as String;
       final String categoryName = resource['categoryName'] as String;
       final Color categoryColor = resource['categoryColor'] as Color;
@@ -422,6 +425,7 @@ class HomeState extends State<Home> {
         title: title,
         description: description,
         link: link,
+        image: image,
         categoryId: categoryId,
         categoryName: categoryName,
         categoryColor: categoryColor,

@@ -39,11 +39,13 @@ dependencies:
   firebase_core: ^3.15.1
   firebase_auth: ^5.6.2
   cloud_firestore: ^5.6.11
+  firebase_storage: ^12.4.9
   firebase_analytics: ^11.5.2
   firebase_crashlytics: ^4.3.9
   http: ^1.4.0
   html: ^0.15.6
   url_launcher: ^6.3.2
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
