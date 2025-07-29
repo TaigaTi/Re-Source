@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:re_source/pages/edit_resource.dart';
 import 'package:re_source/widgets/back_title.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
@@ -89,13 +90,19 @@ class ResourceDetails extends StatelessWidget {
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
                           clipBehavior: Clip.antiAlias,
-                          child: (image != null && image!.isNotEmpty && !image!.startsWith('/'))
+                          child:
+                              (image != null &&
+                                  image!.isNotEmpty &&
+                                  !image!.startsWith('/'))
                               ? Image.network(
                                   image!,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      Image.asset("assets/images/success.png", fit: BoxFit.cover),
+                                      Image.asset(
+                                        "assets/images/success.png",
+                                        fit: BoxFit.cover,
+                                      ),
                                 )
                               : Image.asset(
                                   "assets/images/success.png",
@@ -116,7 +123,10 @@ class ResourceDetails extends StatelessWidget {
                     if (link.isNotEmpty) {
                       final uri = Uri.parse(link);
                       if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Could not launch $link')),
@@ -146,7 +156,20 @@ class ResourceDetails extends StatelessWidget {
                 const SizedBox(height: 15),
                 FilledButton.icon(
                   onPressed: () {
-                    // Implement edit resource functionality
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            EditResource(
+                              link: link,
+                              title: title,
+                              description: description,
+                              category: categoryName,
+                            ),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
+                    );
                   },
                   icon: const Icon(
                     Icons.edit,

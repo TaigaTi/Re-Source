@@ -233,7 +233,6 @@ class LibraryState extends State<Library> {
             ),
           ),
 
-          // Fixed bottom button
           Positioned(
             bottom: 0,
             left: 30,
