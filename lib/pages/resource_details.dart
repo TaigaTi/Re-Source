@@ -128,9 +128,11 @@ class ResourceDetails extends StatelessWidget {
                           mode: LaunchMode.externalApplication,
                         );
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Could not launch $link')),
-                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Could not launch $link')),
+                          );
+                        }
                       }
                     }
                   },
@@ -165,6 +167,7 @@ class ResourceDetails extends StatelessWidget {
                               title: title,
                               description: description,
                               category: categoryName,
+                              existingResource: true,
                             ),
                         transitionDuration: Duration.zero,
                         reverseTransitionDuration: Duration.zero,

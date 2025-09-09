@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -24,7 +22,7 @@ class EditResource extends StatefulWidget {
   final String? link;
   final String? category;
   final String? description;
-  final Bool existingResource;
+  final bool existingResource;
 
   const EditResource({
     super.key,
