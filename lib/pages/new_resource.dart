@@ -128,7 +128,7 @@ class _NewResourceState extends State<NewResource> {
                       context,
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
-                            EditResource(link: link, existingResource: true,),
+                            EditResource(link: link, existingResource: false,),
                         transitionDuration: Duration.zero,
                         reverseTransitionDuration: Duration.zero,
                       ),

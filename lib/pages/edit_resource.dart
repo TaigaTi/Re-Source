@@ -608,7 +608,6 @@ class _EditResourceState extends State<EditResource> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -621,7 +620,11 @@ class _EditResourceState extends State<EditResource> {
             padding: const EdgeInsets.all(30),
             child: Column(
               children: [
-                const BackTitle(title: "Edit Resource"),
+                BackTitle(
+                  title: widget.existingResource
+                      ? "Edit Resource"
+                      : "Add Resource",
+                ),
                 const SizedBox(height: 15),
                 Card(
                   color: const Color.fromARGB(255, 233, 233, 233),
