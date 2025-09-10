@@ -18,6 +18,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'dart:io';
 
 class EditResource extends StatefulWidget {
+  final String? resourceId;
   final String? title;
   final String? link;
   final String? category;
@@ -26,6 +27,7 @@ class EditResource extends StatefulWidget {
 
   const EditResource({
     super.key,
+    this.resourceId,
     required this.link,
     this.title,
     this.category,
@@ -493,7 +495,7 @@ class _EditResourceState extends State<EditResource> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('You must be logged in to add resources.'),
+            content: Text('You must be logged in to update resources.'),
           ),
         );
         Navigator.of(
@@ -538,33 +540,42 @@ class _EditResourceState extends State<EditResource> {
     }
 
     try {
-      String actualCategoryId;
-
       final userCategoriesRef = database
           .collection('users')
           .doc(user.uid)
           .collection('categories');
 
-      final existingCategories = await userCategoriesRef
+      // Find the new category ID
+      String newCategoryId;
+      final newCategoryQuery = await userCategoriesRef
           .where('name', isEqualTo: categoryName)
           .limit(1)
           .get();
 
-      if (existingCategories.docs.isNotEmpty) {
-        actualCategoryId = existingCategories.docs.first.id;
+      if (newCategoryQuery.docs.isNotEmpty) {
+        newCategoryId = newCategoryQuery.docs.first.id;
       } else {
         final newCategoryDocRef = await userCategoriesRef.add({
           'name': categoryName,
           'createdAt': FieldValue.serverTimestamp(),
           'color': getRandomCategoryColor(),
         });
-        actualCategoryId = newCategoryDocRef.id;
+        newCategoryId = newCategoryDocRef.id;
       }
 
-      final resourcesCollectionRef = userCategoriesRef
-          .doc(actualCategoryId)
-          .collection('resources');
+      // Find the old category ID (from widget.category)
+      String? oldCategoryId;
+      if (widget.category != null && widget.category!.isNotEmpty) {
+        final oldCategoryQuery = await userCategoriesRef
+            .where('name', isEqualTo: widget.category)
+            .limit(1)
+            .get();
+        if (oldCategoryQuery.docs.isNotEmpty) {
+          oldCategoryId = oldCategoryQuery.docs.first.id;
+        }
+      }
 
+      // Prepare image upload if needed
       String? imageUrlToSave = _imageUrl;
       if (_pickedImageFile != null) {
         imageUrlToSave = await _uploadImageIfNeeded();
@@ -573,13 +584,58 @@ class _EditResourceState extends State<EditResource> {
 
       final String linkToSave = await ensureLinkProtocol(widget.link);
 
-      await resourcesCollectionRef.add({
-        'title': title,
-        'link': linkToSave,
-        'description': description,
-        'image': imageUrlToSave ?? '',
-        'addedAt': FieldValue.serverTimestamp(),
-      });
+      // Only proceed if resourceId is present
+      if (widget.resourceId == null || widget.resourceId!.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Resource ID missing. Cannot update resource.')),
+          );
+        }
+        return;
+      }
+
+      // If category changed, move resource
+      if (oldCategoryId != null &&
+          oldCategoryId != newCategoryId) {
+        // Delete from old category
+        final oldResourceRef = userCategoriesRef
+            .doc(oldCategoryId)
+            .collection('resources')
+            .doc(widget.resourceId);
+
+        final oldResourceSnapshot = await oldResourceRef.get();
+        if (oldResourceSnapshot.exists) {
+          await oldResourceRef.delete();
+        }
+
+        // Add to new category with same resourceId
+        final newResourceRef = userCategoriesRef
+            .doc(newCategoryId)
+            .collection('resources')
+            .doc(widget.resourceId);
+
+        await newResourceRef.set({
+          'title': title,
+          'link': linkToSave,
+          'description': description,
+          'image': imageUrlToSave ?? '',
+          'addedAt': FieldValue.serverTimestamp(),
+        });
+      } else if (oldCategoryId != null) {
+        // Category did not change, just update resource
+        final resourceRef = userCategoriesRef
+            .doc(oldCategoryId)
+            .collection('resources')
+            .doc(widget.resourceId);
+
+        await resourceRef.update({
+          'title': title,
+          'link': linkToSave,
+          'description': description,
+          'image': imageUrlToSave ?? '',
+          // Do not update addedAt for edits
+        });
+      }
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -596,13 +652,13 @@ class _EditResourceState extends State<EditResource> {
       await FirebaseCrashlytics.instance.recordError(
         e,
         stack,
-        reason: 'Error adding new resource.',
+        reason: 'Error updating resource.',
         fatal: false,
       );
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to add resource: $e')));
+        ).showSnackBar(SnackBar(content: Text('Failed to update resource: $e')));
       }
       rethrow;
     }
@@ -793,7 +849,7 @@ class _EditResourceState extends State<EditResource> {
                 ),
                 const SizedBox(height: 20),
                 FilledButton(
-                  onPressed: () => {addResource()},
+                  onPressed: () => {widget.existingResource ? updateResource() : addResource()},
                   style: ButtonStyle(
                     minimumSize: WidgetStateProperty.all(
                       const Size(double.infinity, 45),

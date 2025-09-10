@@ -163,6 +163,7 @@ class ResourceDetails extends StatelessWidget {
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             EditResource(
+                              resourceId: resourceId,
                               link: link,
                               title: title,
                               description: description,
