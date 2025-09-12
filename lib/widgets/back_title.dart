@@ -19,12 +19,14 @@ class BackTitle extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 5),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            overflow: TextOverflow.ellipsis
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              overflow: TextOverflow.ellipsis
+            ),
           ),
         ),
       ],
