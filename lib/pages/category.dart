@@ -359,8 +359,6 @@ class CategoryState extends State<Category> {
                           } else {
                             List<Map<String, dynamic>> resources = snapshot.data!;
                             return MasonryGridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
                               crossAxisCount: 2,
                               crossAxisSpacing: 10,
                               mainAxisSpacing: 10,
@@ -376,7 +374,7 @@ class CategoryState extends State<Category> {
                                   categoryName: widget.name,
                                   categoryColor: widget.color,
                                   indicator: false,
-                                  image: resourceData['image'] ?? '', // <-- Pass the image field
+                                  image: resourceData['image'] ?? '',
                                 );
                               },
                             );
