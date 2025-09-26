@@ -588,15 +588,16 @@ class _EditResourceState extends State<EditResource> {
       if (widget.resourceId == null || widget.resourceId!.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Resource ID missing. Cannot update resource.')),
+            const SnackBar(
+              content: Text('Resource ID missing. Cannot update resource.'),
+            ),
           );
         }
         return;
       }
 
       // If category changed, move resource
-      if (oldCategoryId != null &&
-          oldCategoryId != newCategoryId) {
+      if (oldCategoryId != null && oldCategoryId != newCategoryId) {
         // Delete from old category
         final oldResourceRef = userCategoriesRef
             .doc(oldCategoryId)
@@ -656,9 +657,9 @@ class _EditResourceState extends State<EditResource> {
         fatal: false,
       );
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to update resource: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update resource: $e')),
+        );
       }
       rethrow;
     }
@@ -676,10 +677,21 @@ class _EditResourceState extends State<EditResource> {
             padding: const EdgeInsets.all(30),
             child: Column(
               children: [
-                BackTitle(
-                  title: widget.existingResource
-                      ? "Edit Resource"
-                      : "Add Resource",
+                Row(
+                  children: [
+                    Expanded(
+                      child: BackTitle(
+                        title: widget.existingResource
+                            ? "Edit Resource"
+                            : "Add Resource",
+                      ),
+                    ),
+                    widget.existingResource ? IconButton(
+                      icon: Icon(Icons.delete),
+                      color: Colors.red,
+                      onPressed: () {},
+                    ) : SizedBox(),
+                  ],
                 ),
                 const SizedBox(height: 15),
                 Card(
@@ -849,7 +861,9 @@ class _EditResourceState extends State<EditResource> {
                 ),
                 const SizedBox(height: 20),
                 FilledButton(
-                  onPressed: () => {widget.existingResource ? updateResource() : addResource()},
+                  onPressed: () => {
+                    widget.existingResource ? updateResource() : addResource(),
+                  },
                   style: ButtonStyle(
                     minimumSize: WidgetStateProperty.all(
                       const Size(double.infinity, 45),
