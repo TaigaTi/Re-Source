@@ -92,9 +92,9 @@ class LibraryState extends State<Library> {
 
     if (user == null) {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const Login()),
-        );
+        Navigator.of(
+          context,
+        ).pushReplacement(MaterialPageRoute(builder: (_) => const Login()));
       }
       FirebaseCrashlytics.instance.recordError(
         Exception('Attempt to access Library while not logged in.'),
@@ -116,8 +116,9 @@ class LibraryState extends State<Library> {
         final data = doc.data();
         final categoryName = (data['name'] as String?) ?? 'Untitled Category';
         final int? colorValue = data['color'];
-        final categoryColor =
-            colorValue != null ? Color(colorValue) : Colors.grey;
+        final categoryColor = colorValue != null
+            ? Color(colorValue)
+            : Colors.grey;
 
         return {"id": doc.id, "name": categoryName, "color": categoryColor};
       }).toList();
@@ -156,10 +157,7 @@ class LibraryState extends State<Library> {
               children: [
                 const Text(
                   "Library",
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 10),
                 SearchBar(
@@ -174,7 +172,11 @@ class LibraryState extends State<Library> {
                             borderRadius: BorderRadius.circular(50),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Icon(Icons.close, size: 18, color: Colors.grey[600]),
+                              child: Icon(
+                                Icons.close,
+                                size: 18,
+                                color: Colors.grey[600],
+                              ),
                             ),
                           )
                         : const SizedBox(width: 34, height: 34),
@@ -191,10 +193,7 @@ class LibraryState extends State<Library> {
                     const Color.fromRGBO(233, 233, 233, 1.0),
                   ),
                   padding: WidgetStateProperty.all(
-                    const EdgeInsets.symmetric(
-                      horizontal: 15.0,
-                      vertical: 8.0,
-                    ),
+                    const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
                   ),
                   elevation: WidgetStateProperty.all(0),
                 ),
@@ -204,27 +203,26 @@ class LibraryState extends State<Library> {
 
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _filteredCategories.isEmpty
-                      ? Center(
-                          child: Text(
-                            _isSearching
-                                ? 'No matching categories found.'
-                                : 'No categories found. Start by adding one!',
-                          ),
-                        )
-                      : ListView.builder(
-                          itemCount: _filteredCategories.length,
-                          itemBuilder: (context, index) {
-                            final category = _filteredCategories[index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
-                              child: CategoryCard(category: category),
-                            );
-                          },
-                        ),
+                  ? Center(
+                      child: Text(
+                        _isSearching
+                            ? 'No matching categories found.'
+                            : 'No categories found. Start by adding one!',
+                      ),
+                    )
+                  : GridView.count(
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 5,
+                      crossAxisCount: 1,
+                      children: _filteredCategories
+                          .map((category) => CategoryCard(category: category))
+                          .toList(),
+                    ),
             ),
           ),
         ],
@@ -247,21 +245,17 @@ class LibraryState extends State<Library> {
               );
             },
             style: ButtonStyle(
-              minimumSize:
-                  WidgetStateProperty.all(const Size(double.infinity, 45)),
+              minimumSize: WidgetStateProperty.all(
+                const Size(double.infinity, 45),
+              ),
               shape: WidgetStateProperty.all(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               backgroundColor: WidgetStateProperty.all(
                 const Color.fromARGB(255, 87, 175, 161),
               ),
             ),
-            child: const Text(
-              "Add Resource",
-              style: TextStyle(fontSize: 16),
-            ),
+            child: const Text("Add Resource", style: TextStyle(fontSize: 16)),
           ),
         ),
       ),
