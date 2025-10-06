@@ -146,132 +146,124 @@ class LibraryState extends State<Library> {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
-      body: Stack(
+      body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 130.0, bottom: 80.0),
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredCategories.isEmpty
-                    ? Center(
-                        child: Text(
-                          _isSearching
-                              ? 'No matching categories found.'
-                              : 'No categories found. Start by adding one!',
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-                        itemCount: _filteredCategories.length,
-                        itemBuilder: (context, index) {
-                          final category = _filteredCategories[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: CategoryCard(category: category),
-                          );
-                        },
-                      ),
-          ),
-
-          // Fixed top section
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(30, 20, 30, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Library",
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w500,
-                    ),
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(30, 20, 30, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Library",
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: 10),
-                  SearchBar(
-                    controller: _searchController,
-                    onChanged: (value) {},
-                    hintText: "Looking for something?",
-                    leading: const Icon(Icons.search),
-                    trailing: [
-                      _searchController.text.isNotEmpty
-                          ? InkWell(
-                              onTap: _clearSearch,
-                              borderRadius: BorderRadius.circular(50),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Icon(Icons.close, size: 18, color: Colors.grey[600]),
-                              ),
-                            )
-                          : const SizedBox(width: 34, height: 34),
-                    ],
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50.0),
-                        side: const BorderSide(
-                          color: Color.fromRGBO(233, 233, 233, 1.0),
-                        ),
-                      ),
-                    ),
-                    backgroundColor: WidgetStateProperty.all(
-                      const Color.fromRGBO(233, 233, 233, 1.0),
-                    ),
-                    padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(
-                        horizontal: 15.0,
-                        vertical: 8.0,
-                      ),
-                    ),
-                    elevation: WidgetStateProperty.all(0),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          Positioned(
-            bottom: 0,
-            left: 30,
-            right: 30,
-            child: Container(
-              decoration: BoxDecoration(color: Colors.white),
-              padding: const EdgeInsets.fromLTRB(0.0, 30.0, 0.0, 70.0),
-              child: FilledButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const NewResource(),
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                  );
-                },
-                style: ButtonStyle(
-                  minimumSize:
-                      WidgetStateProperty.all(const Size(double.infinity, 45)),
+                ),
+                const SizedBox(height: 10),
+                SearchBar(
+                  controller: _searchController,
+                  onChanged: (value) {},
+                  hintText: "Looking for something?",
+                  leading: const Icon(Icons.search),
+                  trailing: [
+                    _searchController.text.isNotEmpty
+                        ? InkWell(
+                            onTap: _clearSearch,
+                            borderRadius: BorderRadius.circular(50),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Icon(Icons.close, size: 18, color: Colors.grey[600]),
+                            ),
+                          )
+                        : const SizedBox(width: 34, height: 34),
+                  ],
                   shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(50.0),
+                      side: const BorderSide(
+                        color: Color.fromRGBO(233, 233, 233, 1.0),
+                      ),
                     ),
                   ),
                   backgroundColor: WidgetStateProperty.all(
-                    const Color.fromARGB(255, 87, 175, 161),
+                    const Color.fromRGBO(233, 233, 233, 1.0),
                   ),
+                  padding: WidgetStateProperty.all(
+                    const EdgeInsets.symmetric(
+                      horizontal: 15.0,
+                      vertical: 8.0,
+                    ),
+                  ),
+                  elevation: WidgetStateProperty.all(0),
                 ),
-                child: const Text(
-                  "Add Resource",
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _filteredCategories.isEmpty
+                      ? Center(
+                          child: Text(
+                            _isSearching
+                                ? 'No matching categories found.'
+                                : 'No categories found. Start by adding one!',
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _filteredCategories.length,
+                          itemBuilder: (context, index) {
+                            final category = _filteredCategories[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: CategoryCard(category: category),
+                            );
+                          },
+                        ),
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(30.0, 40.0, 30.0, 50.0),
+        child: SafeArea(
+          top: false,
+          child: FilledButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const NewResource(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
+            },
+            style: ButtonStyle(
+              minimumSize:
+                  WidgetStateProperty.all(const Size(double.infinity, 45)),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              backgroundColor: WidgetStateProperty.all(
+                const Color.fromARGB(255, 87, 175, 161),
+              ),
+            ),
+            child: const Text(
+              "Add Resource",
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+        ),
       ),
     );
   }
