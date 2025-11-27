@@ -284,9 +284,15 @@ class _EditResourceState extends State<EditResource> {
     });
   }
 
-  Future<String?> _uploadImageIfNeeded() async {
+  /// Uploads picked image and returns both the download URL and the storage path.
+  /// Returned map keys: 'downloadUrl' and 'storagePath'.
+  Future<Map<String, String>?> _uploadImageIfNeeded() async {
     if (_pickedImageFile == null) {
-      return _imageUrl;
+      // Nothing picked, return existing image if any (no storagePath)
+      if (_imageUrl != null && _imageUrl!.isNotEmpty) {
+        return {'downloadUrl': _imageUrl!, 'storagePath': ''};
+      }
+      return null;
     }
 
     setState(() {
@@ -295,9 +301,9 @@ class _EditResourceState extends State<EditResource> {
 
     try {
       final FirebaseStorage storage = FirebaseStorage.instance;
-      final String fileName =
+      final String storagePath =
           'resource_images/${DateTime.now().millisecondsSinceEpoch}_${_pickedImageFile!.name}';
-      final Reference ref = storage.ref().child(fileName);
+      final Reference ref = storage.ref().child(storagePath);
 
       final UploadTask uploadTask = ref.putData(
         await _pickedImageFile!.readAsBytes(),
@@ -305,7 +311,7 @@ class _EditResourceState extends State<EditResource> {
       final TaskSnapshot snapshot = await uploadTask;
       final String downloadUrl = await snapshot.ref.getDownloadURL();
 
-      return downloadUrl;
+      return {'downloadUrl': downloadUrl, 'storagePath': storagePath};
     } catch (e, s) {
       await FirebaseCrashlytics.instance.recordError(
         e,
@@ -427,9 +433,12 @@ class _EditResourceState extends State<EditResource> {
           .collection('resources');
 
       String? imageUrlToSave = _imageUrl;
+      String? storagePathToSave;
       if (_pickedImageFile != null) {
-        imageUrlToSave = await _uploadImageIfNeeded();
-        if (imageUrlToSave == null) return; // Stop if upload failed
+        final uploadResult = await _uploadImageIfNeeded();
+        if (uploadResult == null) return; // Stop if upload failed
+        imageUrlToSave = uploadResult['downloadUrl'];
+        storagePathToSave = uploadResult['storagePath'];
       }
 
       final String linkToSave = await ensureLinkProtocol(widget.link);
@@ -439,7 +448,9 @@ class _EditResourceState extends State<EditResource> {
         'link': linkToSave,
         'description': description,
         'image': imageUrlToSave ?? '',
+        'storagePath': storagePathToSave ?? '',
         'addedAt': FieldValue.serverTimestamp(),
+        'ownerId': user.uid,
       });
 
       if (mounted) {
@@ -577,9 +588,12 @@ class _EditResourceState extends State<EditResource> {
 
       // Prepare image upload if needed
       String? imageUrlToSave = _imageUrl;
+      String? storagePathToSave;
       if (_pickedImageFile != null) {
-        imageUrlToSave = await _uploadImageIfNeeded();
-        if (imageUrlToSave == null) return; // Stop if upload failed
+        final uploadResult = await _uploadImageIfNeeded();
+        if (uploadResult == null) return; // Stop if upload failed
+        imageUrlToSave = uploadResult['downloadUrl'];
+        storagePathToSave = uploadResult['storagePath'];
       }
 
       final String linkToSave = await ensureLinkProtocol(widget.link);
@@ -620,7 +634,9 @@ class _EditResourceState extends State<EditResource> {
           'link': linkToSave,
           'description': description,
           'image': imageUrlToSave ?? '',
+          'storagePath': storagePathToSave ?? '',
           'addedAt': FieldValue.serverTimestamp(),
+          'ownerId': user.uid,
         });
       } else if (oldCategoryId != null) {
         // Category did not change, just update resource
@@ -629,13 +645,17 @@ class _EditResourceState extends State<EditResource> {
             .collection('resources')
             .doc(widget.resourceId);
 
-        await resourceRef.update({
+        final updateData = {
           'title': title,
           'link': linkToSave,
           'description': description,
           'image': imageUrlToSave ?? '',
-          // Do not update addedAt for edits
-        });
+          'ownerId': user.uid,
+        };
+        if (storagePathToSave != null) {
+          updateData['storagePath'] = storagePathToSave;
+        }
+        await resourceRef.update(updateData);
       }
 
       if (mounted) {

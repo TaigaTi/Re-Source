@@ -615,31 +615,57 @@ class HomeState extends State<Home> {
                       ),
                       const SizedBox(height: 12),
                       Expanded(
-                        child: FutureBuilder<List<Widget>>(
-                          future: fetchRecentResources(),
+                        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                          stream: FirebaseFirestore.instance
+                              .collectionGroup('resources')
+                              .where('ownerId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+                              .orderBy('addedAt', descending: true)
+                              .limit(6)
+                              .snapshots(),
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator());
                             } else if (snapshot.hasError) {
-                              return Center(
-                                child: Text('Error: ${snapshot.error}'),
-                              );
-                            } else if (!snapshot.hasData ||
-                                snapshot.data!.isEmpty) {
-                              return const Center(
-                                child: Text('No recent resources found.'),
-                              );
+                              return Center(child: Text('Error: ${snapshot.error}'));
+                            } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                              return const Center(child: Text('No recent resources found.'));
                             } else {
+                              final docs = snapshot.data!.docs;
                               return MasonryGridView.count(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 10,
                                 mainAxisSpacing: 10,
-                                itemCount: snapshot.data!.length,
-                                itemBuilder: (context, index) =>
-                                    snapshot.data![index],
+                                itemCount: docs.length,
+                                itemBuilder: (context, index) {
+                                  final d = docs[index];
+                                  final data = d.data();
+                                  final String resourceId = d.id;
+                                  final String title = (data['title'] as String?) ?? 'Untitled Resource';
+                                  final String description = (data['description'] as String?) ?? 'No description';
+                                  final String link = (data['link'] as String?) ?? '';
+                                  final String image = (data['image'] as String?) ?? '';
+                                  final String storagePath = (data['storagePath'] as String?) ?? '';
+                                  // categoryId and categoryName are not stored on collectionGroup docs reliably,
+                                  // attempt to read if present
+                                  final String categoryId = d.reference.parent.parent?.id ?? '';
+                                  final String categoryName = '';
+                                  final Color categoryColor = Colors.grey;
+
+                                  return ResourceCard(
+                                    id: resourceId,
+                                    title: title,
+                                    description: description,
+                                    link: link,
+                                    image: image,
+                                    storagePath: storagePath,
+                                    categoryId: categoryId,
+                                    categoryName: categoryName,
+                                    categoryColor: categoryColor,
+                                    textColor: const Color.fromARGB(255, 89, 89, 89),
+                                    backgroundColor: const Color.fromARGB(255, 233, 233, 233),
+                                    indicator: true,
+                                  );
+                                },
                               );
                             }
                           },

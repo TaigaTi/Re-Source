@@ -220,7 +220,14 @@ class LibraryState extends State<Library> {
                       childAspectRatio: 5,
                       crossAxisCount: 1,
                       children: _filteredCategories
-                          .map((category) => CategoryCard(category: category))
+                          .map((category) => CategoryCard(
+                                category: category,
+                                onReturn: (modified) {
+                                  if (modified) {
+                                    _loadCategories();
+                                  }
+                                },
+                              ))
                           .toList(),
                     ),
             ),

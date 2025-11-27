@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:re_source/pages/edit_resource.dart';
+import 'package:re_source/pages/login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:re_source/widgets/back_title.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
@@ -10,6 +15,7 @@ class ResourceDetails extends StatelessWidget {
   final String title;
   final String description;
   final String? image;
+  final String? storagePath;
   final String link;
   final String categoryId;
   final String categoryName;
@@ -25,6 +31,7 @@ class ResourceDetails extends StatelessWidget {
     required this.categoryId,
     required this.categoryName,
     required this.categoryColor,
+    this.storagePath,
   });
 
   @override
@@ -120,8 +127,34 @@ class ResourceDetails extends StatelessWidget {
                 const SizedBox(height: 25),
                 FilledButton.icon(
                   onPressed: () async {
-                    if (link.isNotEmpty) {
-                      final uri = Uri.parse(link);
+                    if (link.isEmpty) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('No link provided for this resource.')),
+                        );
+                      }
+                      return;
+                    }
+
+                    // Normalize link: add https:// if missing
+                    String processed = link.trim();
+                    if (!RegExp(r'^https?://', caseSensitive: false).hasMatch(processed)) {
+                      processed = 'https://$processed';
+                    }
+
+                    // Encode and parse the URL to guard against spaces and unusual characters
+                    final encoded = Uri.encodeFull(processed);
+                    final uri = Uri.tryParse(encoded);
+                    if (uri == null) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Invalid URL: $link')),
+                        );
+                      }
+                      return;
+                    }
+
+                    try {
                       if (await canLaunchUrl(uri)) {
                         await launchUrl(
                           uri,
@@ -130,9 +163,17 @@ class ResourceDetails extends StatelessWidget {
                       } else {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Could not launch $link')),
+                            SnackBar(content: Text('Could not launch $processed')),
                           );
                         }
+                      }
+                    } catch (e, s) {
+                      FirebaseCrashlytics.instance.recordError(e, s,
+                          reason: 'Failed to launch resource link');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Could not open link: $e')),
+                        );
                       }
                     }
                   },
@@ -197,6 +238,109 @@ class ResourceDetails extends StatelessWidget {
                     ),
                     backgroundColor: WidgetStateProperty.all(
                       const Color.fromARGB(255, 233, 233, 233),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                FilledButton.icon(
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Delete Resource'),
+                        content: const Text('Are you sure you want to delete this resource? This action cannot be undone.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm != true) return;
+
+                    try {
+                      final user = FirebaseAuth.instance.currentUser;
+                      if (user == null) {
+                        if (context.mounted) {
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const Login()));
+                        }
+                        return;
+                      }
+
+                      if (categoryId.isEmpty) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Category ID missing; cannot delete resource.')),
+                          );
+                        }
+                        return;
+                      }
+
+                      // Attempt to delete associated image from Firebase Storage.
+                      try {
+                        // Prefer deleting by stored storage path if available (more reliable)
+                        if (storagePath != null && storagePath!.isNotEmpty) {
+                          await FirebaseStorage.instance.ref().child(storagePath!).delete();
+                        } else if (image != null && image!.isNotEmpty && image!.contains('firebasestorage.googleapis.com')) {
+                          // Fallback: try to derive ref from download URL
+                          final storageRef = FirebaseStorage.instance.refFromURL(image!);
+                          await storageRef.delete();
+                        }
+                      } catch (e, s) {
+                        // Log but continue with deleting the firestore document
+                        FirebaseCrashlytics.instance.recordError(e, s, reason: 'Failed to delete resource image from storage', fatal: false);
+                      }
+
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .collection('categories')
+                          .doc(categoryId)
+                          .collection('resources')
+                          .doc(resourceId)
+                          .delete();
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Resource deleted.')),
+                        );
+                        Navigator.of(context).pop(true);
+                      }
+                    } catch (e, s) {
+                      FirebaseCrashlytics.instance.recordError(e, s,
+                          reason: 'Failed to delete resource');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to delete resource: $e')),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    'Delete Resource',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                  style: ButtonStyle(
+                    minimumSize: WidgetStateProperty.all(
+                      const Size(double.infinity, 45),
+                    ),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    backgroundColor: WidgetStateProperty.all(
+                      Colors.red,
                     ),
                   ),
                 ),

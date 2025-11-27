@@ -6,6 +6,7 @@ class ResourceCard extends StatelessWidget {
   final String title;
   final String link;
   final String? image;
+  final String? storagePath;
   final String? description;
   final String? categoryId;
   final String? categoryName;
@@ -13,6 +14,7 @@ class ResourceCard extends StatelessWidget {
   final Color? textColor;
   final Color? backgroundColor;
   final bool indicator; 
+  final Future<bool?> Function(BuildContext)? onOpen;
 
   const ResourceCard({
     super.key,
@@ -20,6 +22,7 @@ class ResourceCard extends StatelessWidget {
     required this.title,
     required this.link,
     this.image,
+    this.storagePath,
     required this.description,
     this.categoryId,
     this.categoryName,
@@ -27,13 +30,19 @@ class ResourceCard extends StatelessWidget {
     this.textColor,
     this.backgroundColor,
     required this.indicator,
+    this.onOpen,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        if (onOpen != null) {
+          await onOpen!(context);
+          return;
+        }
+
+        await Navigator.push(
           context,
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -43,6 +52,7 @@ class ResourceCard extends StatelessWidget {
                   description: description ?? '',
                   link: link as String? ?? '',
                   image: image,
+                  storagePath: storagePath,
                   categoryId: categoryId ?? '',
                   categoryName: categoryName ?? '',
                   categoryColor: categoryColor ?? Color.fromARGB(255, 233, 233, 233),

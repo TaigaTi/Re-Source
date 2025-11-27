@@ -3,7 +3,9 @@ import 'package:re_source/pages/category.dart';
 
 class CategoryCard extends StatelessWidget {
   final Map<String, dynamic> category;
-  const CategoryCard({super.key, required this.category});
+  final void Function(bool modified)? onReturn;
+
+  const CategoryCard({super.key, required this.category, this.onReturn});
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +17,8 @@ class CategoryCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final result = await Navigator.push<bool?>(
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => Category(
@@ -28,6 +30,9 @@ class CategoryCard extends StatelessWidget {
               reverseTransitionDuration: Duration.zero,
             ),
           );
+          if (result == true) {
+            if (onReturn != null) onReturn!(true);
+          }
         },
         child: Container(
           constraints: const BoxConstraints(minHeight: 84),
