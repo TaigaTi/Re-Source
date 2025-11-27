@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Allow WebView and network access -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="Re-Source"
         android:name="${applicationName}"
@@ -31,15 +33,28 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-    <!-- Required to query activities that can process text, see:
-         https://developer.android.com/training/package-visibility and
-         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+    <!-- Required to query activities that can process text or handle web links.
+         See: https://developer.android.com/training/package-visibility
+         and URL launcher guidance for Android 11+.
 
-         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+         Adding VIEW intents with http/https schemes lets the platform
+         resolve browser apps so `canLaunchUrl` / `launchUrl` behave
+         correctly on Android 11+ (package visibility changes). -->
     <queries>
+        <!-- Allow resolving apps that can process selected text -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+
+        <!-- Allow resolving apps that can VIEW http/https links (browsers) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
         </intent>
     </queries>
 </manifest>

@@ -9,6 +9,7 @@ import 'package:re_source/widgets/back_title.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:re_source/pages/in_app_webview.dart';
 
 class ResourceDetails extends StatelessWidget {
   final String resourceId;
@@ -127,56 +128,79 @@ class ResourceDetails extends StatelessWidget {
                 const SizedBox(height: 25),
                 FilledButton.icon(
                   onPressed: () async {
-                    if (link.isEmpty) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('No link provided for this resource.')),
-                        );
-                      }
-                      return;
-                    }
-
-                    // Normalize link: add https:// if missing
-                    String processed = link.trim();
-                    if (!RegExp(r'^https?://', caseSensitive: false).hasMatch(processed)) {
-                      processed = 'https://$processed';
-                    }
-
-                    // Encode and parse the URL to guard against spaces and unusual characters
-                    final encoded = Uri.encodeFull(processed);
-                    final uri = Uri.tryParse(encoded);
-                    if (uri == null) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Invalid URL: $link')),
-                        );
-                      }
-                      return;
-                    }
-
-                    try {
-                      if (await canLaunchUrl(uri)) {
-                        await launchUrl(
-                          uri,
-                          mode: LaunchMode.externalApplication,
-                        );
-                      } else {
+                      if (link.isEmpty) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Could not launch $processed')),
+                            const SnackBar(content: Text('No link provided for this resource.')),
+                          );
+                        }
+                        return;
+                      }
+
+                      // Prepare the URL. Ensure it has a scheme; prefer https when missing.
+                      String processed = link.trim();
+                      if (!RegExp(r'^[a-zA-Z][a-zA-Z0-9+.-]*://').hasMatch(processed)) {
+                        processed = 'https://$processed';
+                      }
+
+                      // Try several parsing/launch strategies to handle spaces, tokens, or odd characters.
+                      Uri? uri;
+                      try {
+                        uri = Uri.parse(processed);
+                        if (!uri.hasScheme) {
+                          uri = Uri.parse('https://$processed');
+                        }
+                      } catch (_) {
+                        // Last resort: percent-encode the full string and try again
+                        try {
+                          uri = Uri.tryParse(Uri.encodeFull(processed));
+                        } catch (_) {
+                          uri = null;
+                        }
+                      }
+
+                      if (uri == null) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Invalid URL: $link')),
+                          );
+                        }
+                        return;
+                      }
+
+                      try {
+                        // Primary attempt
+                        if (await canLaunchUrl(uri)) {
+                          final didLaunch = await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          if (didLaunch) return;
+                        }
+
+                        // Fallback: encoded full-string URI
+                        final Uri? encodedUri = Uri.tryParse(Uri.encodeFull(processed));
+                        if (encodedUri != null && await canLaunchUrl(encodedUri)) {
+                          final didLaunch = await launchUrl(encodedUri, mode: LaunchMode.externalApplication);
+                          if (didLaunch) return;
+                        }
+
+                        // If still not launched, open an in-app webview as a fallback
+                        if (context.mounted) {
+                          final Uri fallbackUri = encodedUri ?? uri;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => InAppWebViewPage(uri: fallbackUri, title: title),
+                            ),
+                          );
+                        }
+                      } catch (e, s) {
+                        FirebaseCrashlytics.instance.recordError(e, s, reason: 'Failed to launch resource link', fatal: false);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Could not open link: $e')),
                           );
                         }
                       }
-                    } catch (e, s) {
-                      FirebaseCrashlytics.instance.recordError(e, s,
-                          reason: 'Failed to launch resource link');
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Could not open link: $e')),
-                        );
-                      }
-                    }
-                  },
+                    },
                   icon: const Icon(Icons.link),
                   label: Text(
                     "Visit Resource",
