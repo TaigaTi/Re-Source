@@ -19,7 +19,8 @@ class SearchableCategoryDropdown extends StatefulWidget {
       _SearchableCategoryDropdownState();
 }
 
-class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown> {
+class _SearchableCategoryDropdownState
+    extends State<SearchableCategoryDropdown> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final LayerLink _layerLink = LayerLink();
@@ -101,6 +102,13 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
   }
 
   OverlayEntry _createOverlayEntry() {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isLight = cs.brightness == Brightness.light;
+    final panelColor = isLight ? cs.surface : cs.surfaceVariant;
+    final borderColor = cs.outlineVariant;
+    final accent = cs.primary;
+
     RenderBox renderBox = context.findRenderObject() as RenderBox;
     Size size = renderBox.size;
     Offset offset = renderBox.localToGlobal(Offset.zero);
@@ -113,12 +121,13 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
         child: Material(
           elevation: 2,
           borderRadius: BorderRadius.circular(10),
+          color: panelColor,
           child: Container(
             constraints: const BoxConstraints(maxHeight: 200),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: panelColor,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: borderColor),
             ),
             child: ListView(
               padding: EdgeInsets.zero,
@@ -148,15 +157,15 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
                         children: [
                           Icon(
                             Icons.add_circle_outline,
-                            color: const Color.fromARGB(255, 87, 175, 161),
+                            color: accent,
                             size: 20,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               "Create '${_searchController.text}' Category",
-                              style: const TextStyle(
-                                color: Color.fromARGB(255, 87, 175, 161),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: accent,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -194,7 +203,7 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
                           Expanded(
                             child: Text(
                               category['name'],
-                              style: const TextStyle(fontSize: 16),
+                              style: theme.textTheme.bodyMedium,
                             ),
                           ),
                         ],
@@ -207,10 +216,10 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
                 if (_filteredCategories.isEmpty && !_shouldShowCreateOption())
                   Container(
                     padding: const EdgeInsets.all(16),
-                    child: const Text(
+                    child: Text(
                       'No categories found',
-                      style: TextStyle(
-                        color: Colors.grey,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
                         fontStyle: FontStyle.italic,
                       ),
                       textAlign: TextAlign.center,
@@ -226,6 +235,10 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final inputFill = cs.surface;
+    final suffixColor = cs.onSurfaceVariant;
     return CompositedTransformTarget(
       link: _layerLink,
       child: GestureDetector(
@@ -244,7 +257,7 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
           onTap: _openDropdown,
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white,
+            fillColor: inputFill,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -266,7 +279,7 @@ class _SearchableCategoryDropdownState extends State<SearchableCategoryDropdown>
               _isDropdownOpen
                   ? Icons.keyboard_arrow_up
                   : Icons.keyboard_arrow_down,
-              color: Colors.grey,
+              color: suffixColor,
             ),
           ),
         ),

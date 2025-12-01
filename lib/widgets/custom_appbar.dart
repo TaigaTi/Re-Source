@@ -13,7 +13,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         image: AssetImage("assets/images/logo-horizontal.png"),
         width: 60,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       automaticallyImplyLeading: false,
       actions: [
         IconButton(
@@ -24,7 +24,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               final isDark = mode == ThemeMode.dark;
               return Icon(
                 isDark ? Icons.dark_mode : Icons.light_mode,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface,
               );
             },
           ),

@@ -42,75 +42,96 @@ class EditResource extends StatefulWidget {
 }
 
 class _EditResourceState extends State<EditResource> {
-    Future<void> _deleteResource() async {
-      final FirebaseFirestore database = FirebaseFirestore.instance;
-      final FirebaseAuth auth = FirebaseAuth.instance;
-      final FirebaseStorage storage = FirebaseStorage.instance;
-      final User? user = auth.currentUser;
-      if (user == null || widget.resourceId == null || widget.resourceId!.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User or resource ID missing.')),
-          );
-        }
-        return;
+  Future<void> _deleteResource() async {
+    final FirebaseFirestore database = FirebaseFirestore.instance;
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final FirebaseStorage storage = FirebaseStorage.instance;
+    final User? user = auth.currentUser;
+    if (user == null ||
+        widget.resourceId == null ||
+        widget.resourceId!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User or resource ID missing.')),
+        );
       }
-      // Find category ID
-      String? categoryId = widget.category;
-      if (categoryId == null || categoryId.isEmpty) {
-        // Try to find from Firestore
-        final userCategoriesRef = database.collection('users').doc(user.uid).collection('categories');
-        final query = await userCategoriesRef.where('name', isEqualTo: widget.category).limit(1).get();
-        if (query.docs.isNotEmpty) {
-          categoryId = query.docs.first.id;
-        }
-      }
-      if (categoryId == null || categoryId.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Category not found.')),
-          );
-        }
-        return;
-      }
-      final resourceRef = database.collection('users').doc(user.uid).collection('categories').doc(categoryId).collection('resources').doc(widget.resourceId);
-      try {
-        final resourceDoc = await resourceRef.get();
-        if (resourceDoc.exists) {
-          final data = resourceDoc.data() ?? {};
-          final String? storagePath = data['storagePath'] as String?;
-          // Delete image from Firebase Storage if storagePath exists
-          if (storagePath != null && storagePath.isNotEmpty) {
-            try {
-              await storage.ref().child(storagePath).delete();
-            } catch (e) {
-              debugPrint('Failed to delete image from storage: $e');
-            }
-          }
-          await resourceRef.delete();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Resource deleted.')),
-            );
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => const SuccessPage(),
-                transitionDuration: Duration.zero,
-                reverseTransitionDuration: Duration.zero,
-              ),
-            );
-          }
-        }
-      } catch (e, s) {
-        await FirebaseCrashlytics.instance.recordError(e, s, reason: 'Error deleting resource', fatal: false);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete resource: $e')),
-          );
-        }
+      return;
+    }
+    // Find category ID
+    String? categoryId = widget.category;
+    if (categoryId == null || categoryId.isEmpty) {
+      // Try to find from Firestore
+      final userCategoriesRef = database
+          .collection('users')
+          .doc(user.uid)
+          .collection('categories');
+      final query = await userCategoriesRef
+          .where('name', isEqualTo: widget.category)
+          .limit(1)
+          .get();
+      if (query.docs.isNotEmpty) {
+        categoryId = query.docs.first.id;
       }
     }
+    if (categoryId == null || categoryId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Category not found.')));
+      }
+      return;
+    }
+    final resourceRef = database
+        .collection('users')
+        .doc(user.uid)
+        .collection('categories')
+        .doc(categoryId)
+        .collection('resources')
+        .doc(widget.resourceId);
+    try {
+      final resourceDoc = await resourceRef.get();
+      if (resourceDoc.exists) {
+        final data = resourceDoc.data() ?? {};
+        final String? storagePath = data['storagePath'] as String?;
+        // Delete image from Firebase Storage if storagePath exists
+        if (storagePath != null && storagePath.isNotEmpty) {
+          try {
+            await storage.ref().child(storagePath).delete();
+          } catch (e) {
+            debugPrint('Failed to delete image from storage: $e');
+          }
+        }
+        await resourceRef.delete();
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Resource deleted.')));
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const SuccessPage(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+        }
+      }
+    } catch (e, s) {
+      await FirebaseCrashlytics.instance.recordError(
+        e,
+        s,
+        reason: 'Error deleting resource',
+        fatal: false,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete resource: $e')),
+        );
+      }
+    }
+  }
+
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   String? _selectedCategory;
@@ -226,7 +247,8 @@ class _EditResourceState extends State<EditResource> {
         }
         // Only autofill description if both controller and widget.description are empty
         // Never overwrite description if widget.description is non-empty
-        if ((_descriptionController.text.isEmpty) && (widget.description == null || widget.description!.isEmpty)) {
+        if ((_descriptionController.text.isEmpty) &&
+            (widget.description == null || widget.description!.isEmpty)) {
           _descriptionController.text = metadata['description'] ?? '';
         }
         // Prevent overwriting passed-in description
@@ -234,7 +256,8 @@ class _EditResourceState extends State<EditResource> {
           _descriptionController.text = widget.description!;
         }
         // Only autofill image if not already set from Firestore
-        if ((_imageUrl == null || _imageUrl!.isEmpty) && (metadata['image'] ?? '').isNotEmpty) {
+        if ((_imageUrl == null || _imageUrl!.isEmpty) &&
+            (metadata['image'] ?? '').isNotEmpty) {
           _imageUrl = metadata['image'];
           debugPrint('EditResource: imageUrl from metadata: $_imageUrl');
         }
@@ -767,8 +790,15 @@ class _EditResourceState extends State<EditResource> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isLight = cs.brightness == Brightness.light;
+    final cardColor = isLight ? cs.surfaceVariant : cs.surface;
+    final inputFill = cs.surface;
+    final inputTextColor = theme.textTheme.bodyMedium?.color ?? cs.onSurface;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: cs.background,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: SafeArea(
@@ -790,7 +820,7 @@ class _EditResourceState extends State<EditResource> {
                 ),
                 const SizedBox(height: 15),
                 Card(
-                  color: const Color.fromARGB(255, 233, 233, 233),
+                  color: cardColor,
                   child: SizedBox(
                     width: double.infinity,
                     child: Container(
@@ -798,20 +828,14 @@ class _EditResourceState extends State<EditResource> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Title",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          Text("Title", style: theme.textTheme.titleMedium),
                           const SizedBox(height: 5),
                           TextField(
                             controller: _titleController,
                             maxLength: 35,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: inputFill,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -831,16 +855,11 @@ class _EditResourceState extends State<EditResource> {
                               ),
                             ),
                             keyboardType: TextInputType.text,
+                            style: TextStyle(color: inputTextColor),
                           ),
                           const SizedBox(height: 15),
 
-                          const Text(
-                            "Category",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          Text("Category", style: theme.textTheme.titleMedium),
                           const SizedBox(height: 5),
                           SearchableCategoryDropdown(
                             categories: _categories,
@@ -859,12 +878,9 @@ class _EditResourceState extends State<EditResource> {
                           ),
                           const SizedBox(height: 15),
 
-                          const Text(
+                          Text(
                             "Description",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: theme.textTheme.titleMedium,
                           ),
                           const SizedBox(height: 5),
                           TextField(
@@ -874,7 +890,7 @@ class _EditResourceState extends State<EditResource> {
                             keyboardType: TextInputType.multiline,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: inputFill,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -892,19 +908,13 @@ class _EditResourceState extends State<EditResource> {
                                 vertical: 12,
                               ),
                             ),
+                            style: TextStyle(color: inputTextColor),
                           ),
                           const SizedBox(height: 15),
-
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                "Image",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              Text("Image", style: theme.textTheme.titleMedium),
                               TextButton(
                                 onPressed: _isUploadingImage
                                     ? null
@@ -917,7 +927,10 @@ class _EditResourceState extends State<EditResource> {
                                           strokeWidth: 2,
                                         ),
                                       )
-                                    : const Text("Change Image"),
+                                    : Text(
+                                        "Change Image",
+                                        style: TextStyle(color: cs.primary),
+                                      ),
                               ),
                             ],
                           ),
@@ -933,38 +946,47 @@ class _EditResourceState extends State<EditResource> {
                                     File(_pickedImageFile!.path),
                                     fit: BoxFit.cover,
                                   )
-                                : (_imageUrl != null && _imageUrl!.startsWith('http')
-                                    ? Image.network(
-                                        _imageUrl!,
-                                        fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
-                                          return Container(
-                                            color: Colors.grey[300],
-                                            child: Center(
-                                              child: SizedBox(
-                                                width: 40,
-                                                height: 40,
-                                                child: CircularProgressIndicator(
-                                                  value: loadingProgress.expectedTotalBytes != null
-                                                      ? loadingProgress.cumulativeBytesLoaded /
-                                                          (loadingProgress.expectedTotalBytes ?? 1)
-                                                      : null,
+                                : (_imageUrl != null &&
+                                          _imageUrl!.startsWith('http')
+                                      ? Image.network(
+                                          _imageUrl!,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Container(
+                                              color: cs.surfaceVariant,
+                                              child: Center(
+                                                child: SizedBox(
+                                                  width: 40,
+                                                  height: 40,
+                                                  child: CircularProgressIndicator(
+                                                    value:
+                                                        loadingProgress
+                                                                .expectedTotalBytes !=
+                                                            null
+                                                        ? loadingProgress
+                                                                  .cumulativeBytesLoaded /
+                                                              (loadingProgress
+                                                                      .expectedTotalBytes ??
+                                                                  1)
+                                                        : null,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder: (context, error, stackTrace) =>
-                                            Image.asset(
-                                              'assets/images/success.png',
-                                              fit: BoxFit.cover,
-                                            ),
-                                      )
-                                    : Image.asset(
-                                        'assets/images/success.png',
-                                        fit: BoxFit.cover,
-                                      )),
+                                            );
+                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Image.asset(
+                                                    'assets/images/success.png',
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                        )
+                                      : Image.asset(
+                                          'assets/images/success.png',
+                                          fit: BoxFit.cover,
+                                        )),
                           ),
                         ],
                       ),
@@ -985,11 +1007,16 @@ class _EditResourceState extends State<EditResource> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    backgroundColor: WidgetStateProperty.all(
-                      const Color.fromARGB(255, 87, 175, 161),
-                    ),
+                    backgroundColor: WidgetStateProperty.all(cs.primary),
                   ),
-                  child: const Text("Next", style: TextStyle(fontSize: 18)),
+                  child: Text(
+                    "Next",
+                    style:
+                        theme.textTheme.titleMedium?.copyWith(
+                          color: cs.onPrimary,
+                        ) ??
+                        const TextStyle(fontSize: 18),
+                  ),
                 ),
               ],
             ),

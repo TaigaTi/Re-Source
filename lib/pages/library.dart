@@ -144,20 +144,22 @@ class LibraryState extends State<Library> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.background,
             padding: const EdgeInsets.fromLTRB(30, 20, 30, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   "Library",
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 10),
                 SearchBar(
@@ -184,13 +186,13 @@ class LibraryState extends State<Library> {
                   shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
-                      side: const BorderSide(
-                        color: Color.fromRGBO(233, 233, 233, 1.0),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
                   ),
                   backgroundColor: WidgetStateProperty.all(
-                    const Color.fromRGBO(233, 233, 233, 1.0),
+                    Theme.of(context).colorScheme.surface,
                   ),
                   padding: WidgetStateProperty.all(
                     const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
@@ -220,14 +222,16 @@ class LibraryState extends State<Library> {
                       childAspectRatio: 5,
                       crossAxisCount: 1,
                       children: _filteredCategories
-                          .map((category) => CategoryCard(
-                                category: category,
-                                onReturn: (modified) {
-                                  if (modified) {
-                                    _loadCategories();
-                                  }
-                                },
-                              ))
+                          .map(
+                            (category) => CategoryCard(
+                              category: category,
+                              onReturn: (modified) {
+                                if (modified) {
+                                  _loadCategories();
+                                }
+                              },
+                            ),
+                          )
                           .toList(),
                     ),
             ),
@@ -235,7 +239,7 @@ class LibraryState extends State<Library> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.background,
         padding: const EdgeInsets.fromLTRB(30.0, 40.0, 30.0, 50.0),
         child: SafeArea(
           top: false,
@@ -259,7 +263,7 @@ class LibraryState extends State<Library> {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               backgroundColor: WidgetStateProperty.all(
-                const Color.fromARGB(255, 87, 175, 161),
+                Theme.of(context).colorScheme.primary,
               ),
             ),
             child: const Text("Add Resource", style: TextStyle(fontSize: 16)),

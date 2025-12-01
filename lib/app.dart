@@ -6,8 +6,9 @@ import 'package:re_source/pages/library.dart';
 import 'package:re_source/pages/profile.dart';
 
 // App-wide theme mode controller
-final ValueNotifier<ThemeMode> appThemeMode =
-  ValueNotifier<ThemeMode>(ThemeMode.light);
+final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier<ThemeMode>(
+  ThemeMode.light,
+);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -24,12 +25,36 @@ class MyApp extends StatelessWidget {
               seedColor: Colors.teal,
               brightness: Brightness.light,
             ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: null,
+              foregroundColor: null,
+              elevation: 0,
+              centerTitle: false,
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 36),
+              ),
+            ),
+            cardTheme: const CardThemeData(elevation: 0),
           ),
           darkTheme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.teal,
               brightness: Brightness.dark,
             ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: null,
+              foregroundColor: null,
+              elevation: 0,
+              centerTitle: false,
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 36),
+              ),
+            ),
+            cardTheme: const CardThemeData(elevation: 0),
           ),
           themeMode: mode,
           home: FirebaseAuth.instance.currentUser == null

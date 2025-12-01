@@ -429,26 +429,31 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 30.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Center(
+              Center(
                 child: Text(
                   "Profile",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 78, 173, 162),
-                  ),
+                  style:
+                      Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ) ??
+                      TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
               ),
               const SizedBox(height: 12),
               Card(
-                color: Color.fromARGB(255, 233, 233, 233),
+                color: Theme.of(context).colorScheme.surface,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24.0,
@@ -496,10 +501,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                 width: 34,
                                 height: 34,
                                 decoration: BoxDecoration(
-                                  color: Colors.black87,
+                                  color: Theme.of(context).colorScheme.primary,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
                                     width: 2,
                                   ),
                                   boxShadow: const [
@@ -536,19 +543,31 @@ class _ProfilePageState extends State<ProfilePage> {
                           ? const CircularProgressIndicator()
                           : Text(
                               _userEmail ?? 'Email not available',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black87,
-                              ),
+                              style:
+                                  Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ) ??
+                                  const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                             ),
                       const SizedBox(height: 30),
                       // Change Password Button
                       ElevatedButton(
                         onPressed: _showChangePasswordDialog,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueGrey.shade600,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.secondary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onSecondary,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 35,
                             vertical: 12,
@@ -556,7 +575,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          minimumSize: const Size(double.infinity, 36),
                         ),
                         child: const Text(
                           'Change Password',
@@ -568,8 +586,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       ElevatedButton(
                         onPressed: _logout,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal.shade400,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 35,
                             vertical: 12,
@@ -577,7 +599,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          minimumSize: const Size(double.infinity, 36),
                         ),
                         child: const Text(
                           'Logout',
@@ -589,8 +610,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ElevatedButton(
                         onPressed: _deleteAccount,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade600,
-                          foregroundColor: Colors.white,
+                          backgroundColor: Theme.of(context).colorScheme.error,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onError,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 35,
                             vertical: 12,
@@ -598,7 +621,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          minimumSize: const Size(double.infinity, 36),
                         ),
                         child: const Text(
                           'Delete Account',

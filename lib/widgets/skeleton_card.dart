@@ -3,12 +3,21 @@ import 'package:flutter/material.dart';
 class SkeletonCard extends StatelessWidget {
   final double height;
   final double width;
-  const SkeletonCard({super.key, this.height = 220, this.width = double.infinity});
+  const SkeletonCard({
+    super.key,
+    this.height = 220,
+    this.width = double.infinity,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isLight = cs.brightness == Brightness.light;
+    final cardColor = isLight ? cs.surfaceContainerHighest : cs.surfaceContainerLow;
+    final blockColor = isLight ? cs.surfaceContainerHigh : cs.surfaceContainer;
     return Card(
-      color: Colors.grey[200],
+      elevation: isLight ? 0 : 2,
+      color: cardColor,
       child: SizedBox(
         width: width,
         child: Container(
@@ -20,7 +29,7 @@ class SkeletonCard extends StatelessWidget {
                 width: double.infinity,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: blockColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Center(
@@ -36,7 +45,7 @@ class SkeletonCard extends StatelessWidget {
                 width: double.infinity,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: blockColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -45,7 +54,7 @@ class SkeletonCard extends StatelessWidget {
                 width: 80,
                 height: 14,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: blockColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),

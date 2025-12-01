@@ -13,7 +13,7 @@ class ResourceCard extends StatelessWidget {
   final Color? categoryColor;
   final Color? textColor;
   final Color? backgroundColor;
-  final bool indicator; 
+  final bool indicator;
   final Future<bool?> Function(BuildContext)? onOpen;
 
   const ResourceCard({
@@ -35,6 +35,11 @@ class ResourceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isLight = cs.brightness == Brightness.light;
+    final defaultCardColor = isLight ? cs.surfaceContainerHighest : cs.surfaceContainerHigh;
+    final defaultTextColor = theme.textTheme.bodyMedium?.color ?? cs.onSurface;
     return InkWell(
       onTap: () async {
         if (onOpen != null) {
@@ -55,7 +60,8 @@ class ResourceCard extends StatelessWidget {
                   storagePath: storagePath,
                   categoryId: categoryId ?? '',
                   categoryName: categoryName ?? '',
-                  categoryColor: categoryColor ?? Color.fromARGB(255, 233, 233, 233),
+                  categoryColor:
+                      categoryColor ?? Color.fromARGB(255, 233, 233, 233),
                 ),
 
             transitionDuration: Duration.zero,
@@ -64,7 +70,8 @@ class ResourceCard extends StatelessWidget {
         );
       },
       child: Card(
-        color: backgroundColor ?? categoryColor,
+        elevation: isLight ? 0 : 2,
+        color: backgroundColor ?? categoryColor ?? defaultCardColor,
         child: SizedBox(
           width: double.infinity,
           child: Container(
@@ -77,13 +84,19 @@ class ResourceCard extends StatelessWidget {
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: (image != null && image!.isNotEmpty && !image!.startsWith('/'))
+                  child:
+                      (image != null &&
+                          image!.isNotEmpty &&
+                          !image!.startsWith('/'))
                       ? Image.network(
                           image!,
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
-                              Image.asset("assets/images/success.png", fit: BoxFit.cover),
+                              Image.asset(
+                                "assets/images/success.png",
+                                fit: BoxFit.cover,
+                              ),
                         )
                       : Image.asset(
                           "assets/images/success.png",
@@ -120,7 +133,7 @@ class ResourceCard extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: textColor ?? Colors.white,
+                            color: textColor ?? defaultTextColor,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

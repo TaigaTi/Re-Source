@@ -37,10 +37,15 @@ class ResourceDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final isLight = cs.brightness == Brightness.light;
+    final cardColor = isLight ? cs.surfaceVariant : cs.surface;
+
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
-      backgroundColor: Colors.white,
+      backgroundColor: cs.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -53,7 +58,7 @@ class ResourceDetails extends StatelessWidget {
                 BackTitle(title: title),
                 const SizedBox(height: 30),
                 Card(
-                  color: const Color.fromARGB(255, 233, 233, 233),
+                  color: cardColor,
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
                     child: Column(
@@ -82,9 +87,7 @@ class ResourceDetails extends StatelessWidget {
                                 categoryName,
                                 maxLines: 1,
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
@@ -119,8 +122,7 @@ class ResourceDetails extends StatelessWidget {
                                 ),
                         ),
                         const SizedBox(height: 15),
-
-                        Text(description, style: const TextStyle(fontSize: 15)),
+                        Text(description, style: theme.textTheme.bodyMedium),
                       ],
                     ),
                   ),
@@ -128,83 +130,108 @@ class ResourceDetails extends StatelessWidget {
                 const SizedBox(height: 25),
                 FilledButton.icon(
                   onPressed: () async {
-                      if (link.isEmpty) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('No link provided for this resource.')),
-                          );
-                        }
-                        return;
-                      }
-
-                      // Prepare the URL. Ensure it has a scheme; prefer https when missing.
-                      String processed = link.trim();
-                      if (!RegExp(r'^[a-zA-Z][a-zA-Z0-9+.-]*://').hasMatch(processed)) {
-                        processed = 'https://$processed';
-                      }
-
-                      // Try several parsing/launch strategies to handle spaces, tokens, or odd characters.
-                      Uri? uri;
-                      try {
-                        uri = Uri.parse(processed);
-                        if (!uri.hasScheme) {
-                          uri = Uri.parse('https://$processed');
-                        }
-                      } catch (_) {
-                        // Last resort: percent-encode the full string and try again
-                        try {
-                          uri = Uri.tryParse(Uri.encodeFull(processed));
-                        } catch (_) {
-                          uri = null;
-                        }
-                      }
-
-                      if (uri == null) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Invalid URL: $link')),
-                          );
-                        }
-                        return;
-                      }
-
-                      try {
-                        // Primary attempt
-                        if (await canLaunchUrl(uri)) {
-                          final didLaunch = await launchUrl(uri, mode: LaunchMode.externalApplication);
-                          if (didLaunch) return;
-                        }
-
-                        // Fallback: encoded full-string URI
-                        final Uri? encodedUri = Uri.tryParse(Uri.encodeFull(processed));
-                        if (encodedUri != null && await canLaunchUrl(encodedUri)) {
-                          final didLaunch = await launchUrl(encodedUri, mode: LaunchMode.externalApplication);
-                          if (didLaunch) return;
-                        }
-
-                        // If still not launched, open an in-app webview as a fallback
-                        if (context.mounted) {
-                          final Uri fallbackUri = encodedUri ?? uri;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => InAppWebViewPage(uri: fallbackUri, title: title),
+                    if (link.isEmpty) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'No link provided for this resource.',
                             ),
-                          );
-                        }
-                      } catch (e, s) {
-                        FirebaseCrashlytics.instance.recordError(e, s, reason: 'Failed to launch resource link', fatal: false);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Could not open link: $e')),
-                          );
-                        }
+                          ),
+                        );
                       }
-                    },
-                  icon: const Icon(Icons.link),
+                      return;
+                    }
+
+                    // Prepare the URL. Ensure it has a scheme; prefer https when missing.
+                    String processed = link.trim();
+                    if (!RegExp(
+                      r'^[a-zA-Z][a-zA-Z0-9+.-]*://',
+                    ).hasMatch(processed)) {
+                      processed = 'https://$processed';
+                    }
+
+                    // Try several parsing/launch strategies to handle spaces, tokens, or odd characters.
+                    Uri? uri;
+                    try {
+                      uri = Uri.parse(processed);
+                      if (!uri.hasScheme) {
+                        uri = Uri.parse('https://$processed');
+                      }
+                    } catch (_) {
+                      // Last resort: percent-encode the full string and try again
+                      try {
+                        uri = Uri.tryParse(Uri.encodeFull(processed));
+                      } catch (_) {
+                        uri = null;
+                      }
+                    }
+
+                    if (uri == null) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Invalid URL: $link')),
+                        );
+                      }
+                      return;
+                    }
+
+                    try {
+                      // Primary attempt
+                      if (await canLaunchUrl(uri)) {
+                        final didLaunch = await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                        if (didLaunch) return;
+                      }
+
+                      // Fallback: encoded full-string URI
+                      final Uri? encodedUri = Uri.tryParse(
+                        Uri.encodeFull(processed),
+                      );
+                      if (encodedUri != null &&
+                          await canLaunchUrl(encodedUri)) {
+                        final didLaunch = await launchUrl(
+                          encodedUri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                        if (didLaunch) return;
+                      }
+
+                      // If still not launched, open an in-app webview as a fallback
+                      if (context.mounted) {
+                        final Uri fallbackUri = encodedUri ?? uri;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => InAppWebViewPage(
+                              uri: fallbackUri,
+                              title: title,
+                            ),
+                          ),
+                        );
+                      }
+                    } catch (e, s) {
+                      FirebaseCrashlytics.instance.recordError(
+                        e,
+                        s,
+                        reason: 'Failed to launch resource link',
+                        fatal: false,
+                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Could not open link: $e')),
+                        );
+                      }
+                    }
+                  },
+                  icon: Icon(Icons.link, color: cs.onPrimary),
                   label: Text(
                     "Visit Resource",
-                    style: const TextStyle(fontSize: 16),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: cs.onPrimary,
+                    ),
                   ),
                   style: ButtonStyle(
                     minimumSize: WidgetStateProperty.all(
@@ -215,9 +242,7 @@ class ResourceDetails extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    backgroundColor: WidgetStateProperty.all(
-                      const Color.fromARGB(255, 87, 175, 161),
-                    ),
+                    backgroundColor: WidgetStateProperty.all(cs.primary),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -241,15 +266,11 @@ class ResourceDetails extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: const Icon(
-                    Icons.edit,
-                    color: Color.fromARGB(255, 110, 110, 110),
-                  ),
-                  label: const Text(
+                  icon: Icon(Icons.edit, color: cs.onSurfaceVariant),
+                  label: Text(
                     "Edit Resource",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color.fromARGB(255, 110, 110, 110),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                   style: ButtonStyle(
@@ -261,9 +282,7 @@ class ResourceDetails extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    backgroundColor: WidgetStateProperty.all(
-                      const Color.fromARGB(255, 233, 233, 233),
-                    ),
+                    backgroundColor: WidgetStateProperty.all(cardColor),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -273,7 +292,9 @@ class ResourceDetails extends StatelessWidget {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Delete Resource'),
-                        content: const Text('Are you sure you want to delete this resource? This action cannot be undone.'),
+                        content: const Text(
+                          'Are you sure you want to delete this resource? This action cannot be undone.',
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
@@ -281,7 +302,10 @@ class ResourceDetails extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                         ],
                       ),
@@ -293,7 +317,9 @@ class ResourceDetails extends StatelessWidget {
                       final user = FirebaseAuth.instance.currentUser;
                       if (user == null) {
                         if (context.mounted) {
-                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const Login()));
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => const Login()),
+                          );
                         }
                         return;
                       }
@@ -301,7 +327,11 @@ class ResourceDetails extends StatelessWidget {
                       if (categoryId.isEmpty) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Category ID missing; cannot delete resource.')),
+                            const SnackBar(
+                              content: Text(
+                                'Category ID missing; cannot delete resource.',
+                              ),
+                            ),
                           );
                         }
                         return;
@@ -311,15 +341,27 @@ class ResourceDetails extends StatelessWidget {
                       try {
                         // Prefer deleting by stored storage path if available (more reliable)
                         if (storagePath != null && storagePath!.isNotEmpty) {
-                          await FirebaseStorage.instance.ref().child(storagePath!).delete();
-                        } else if (image != null && image!.isNotEmpty && image!.contains('firebasestorage.googleapis.com')) {
+                          await FirebaseStorage.instance
+                              .ref()
+                              .child(storagePath!)
+                              .delete();
+                        } else if (image != null &&
+                            image!.isNotEmpty &&
+                            image!.contains('firebasestorage.googleapis.com')) {
                           // Fallback: try to derive ref from download URL
-                          final storageRef = FirebaseStorage.instance.refFromURL(image!);
+                          final storageRef = FirebaseStorage.instance
+                              .refFromURL(image!);
                           await storageRef.delete();
                         }
                       } catch (e, s) {
                         // Log but continue with deleting the firestore document
-                        FirebaseCrashlytics.instance.recordError(e, s, reason: 'Failed to delete resource image from storage', fatal: false);
+                        FirebaseCrashlytics.instance.recordError(
+                          e,
+                          s,
+                          reason:
+                              'Failed to delete resource image from storage',
+                          fatal: false,
+                        );
                       }
 
                       await FirebaseFirestore.instance
@@ -338,22 +380,26 @@ class ResourceDetails extends StatelessWidget {
                         Navigator.of(context).pop(true);
                       }
                     } catch (e, s) {
-                      FirebaseCrashlytics.instance.recordError(e, s,
-                          reason: 'Failed to delete resource');
+                      FirebaseCrashlytics.instance.recordError(
+                        e,
+                        s,
+                        reason: 'Failed to delete resource',
+                      );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to delete resource: $e')),
+                          SnackBar(
+                            content: Text('Failed to delete resource: $e'),
+                          ),
                         );
                       }
                     }
                   },
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.white,
-                  ),
-                  label: const Text(
+                  icon: Icon(Icons.delete, color: cs.onError),
+                  label: Text(
                     'Delete Resource',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: cs.onError,
+                    ),
                   ),
                   style: ButtonStyle(
                     minimumSize: WidgetStateProperty.all(
@@ -364,9 +410,7 @@ class ResourceDetails extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    backgroundColor: WidgetStateProperty.all(
-                      Colors.red,
-                    ),
+                    backgroundColor: WidgetStateProperty.all(cs.error),
                   ),
                 ),
               ],

@@ -25,14 +25,14 @@ class HomeState extends State<Home> {
   final FocusNode _searchFocusNode = FocusNode();
   List<Map<String, dynamic>> _allResources = [];
   List<Map<String, dynamic>> _filteredResources = [];
-  
+
   // ignore: unused_field
   bool _isSearching = false;
   OverlayEntry? _overlayEntry;
   final GlobalKey _searchBarKey = GlobalKey();
 
   @override
-    bool _isLoadingResources = true; // Loading flag
+  bool _isLoadingResources = true; // Loading flag
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
@@ -117,7 +117,7 @@ class HomeState extends State<Home> {
         child: Container(
           constraints: const BoxConstraints(maxHeight: 800),
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 244, 244, 244),
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ListView.separated(
@@ -126,7 +126,8 @@ class HomeState extends State<Home> {
             itemCount: _filteredResources.length,
             separatorBuilder: (context, index) => const Divider(
               height: 1,
-              color: Color.fromRGBO(207, 207, 207, 1),
+              // use theme divider color
+              color: Colors.transparent,
             ),
             itemBuilder: (context, index) {
               final resource = _filteredResources[index];
@@ -444,7 +445,7 @@ class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: SafeArea(
@@ -460,22 +461,33 @@ class HomeState extends State<Home> {
                   focusNode: _searchFocusNode,
                   onChanged: (value) {}, // Handler moved to listener
                   hintText: "Looking for something?",
-                  leading: const Icon(Icons.search),
+                  leading: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50.0),
-                      side: const BorderSide(
-                        color: Color.fromRGBO(233, 233, 233, 1.0),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
                   ),
                   backgroundColor: WidgetStateProperty.all(
-                    const Color.fromRGBO(233, 233, 233, 1.0),
+                    Theme.of(context).colorScheme.surfaceVariant,
                   ),
                   padding: WidgetStateProperty.all(
                     const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
                   ),
                   elevation: WidgetStateProperty.all(0),
+                  hintStyle: WidgetStateProperty.all(
+                    TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  textStyle: WidgetStateProperty.all(
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                  ),
                 ),
                 const SizedBox(height: 15),
                 Column(
@@ -483,12 +495,10 @@ class HomeState extends State<Home> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           "Recent Categories",
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w500),
                         ),
                         TextButton(
                           style: ButtonStyle(
@@ -496,10 +506,10 @@ class HomeState extends State<Home> {
                               Colors.transparent,
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             "View All",
                             style: TextStyle(
-                              color: Color.fromARGB(255, 87, 175, 161),
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                           onPressed: () {
@@ -611,10 +621,9 @@ class HomeState extends State<Home> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "Recent Links",
-                        style: TextStyle(
-                          fontSize: 20.0,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -623,17 +632,29 @@ class HomeState extends State<Home> {
                         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                           stream: FirebaseFirestore.instance
                               .collectionGroup('resources')
-                              .where('ownerId', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
+                              .where(
+                                'ownerId',
+                                isEqualTo:
+                                    FirebaseAuth.instance.currentUser?.uid,
+                              )
                               .orderBy('addedAt', descending: true)
                               .limit(6)
                               .snapshots(),
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
                             } else if (snapshot.hasError) {
-                              return Center(child: Text('Error: ${snapshot.error}'));
-                            } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                              return const Center(child: Text('No recent resources found.'));
+                              return Center(
+                                child: Text('Error: ${snapshot.error}'),
+                              );
+                            } else if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return const Center(
+                                child: Text('No recent resources found.'),
+                              );
                             } else {
                               final docs = snapshot.data!.docs;
                               return MasonryGridView.count(
@@ -645,27 +666,55 @@ class HomeState extends State<Home> {
                                   final d = docs[index];
                                   final data = d.data();
                                   final String resourceId = d.id;
-                                  final String title = (data['title'] as String?) ?? 'Untitled Resource';
-                                  final String description = (data['description'] as String?) ?? 'No description';
-                                  final String link = (data['link'] as String?) ?? '';
-                                  final String image = (data['image'] as String?) ?? '';
-                                  final String storagePath = (data['storagePath'] as String?) ?? '';
+                                  final String title =
+                                      (data['title'] as String?) ??
+                                      'Untitled Resource';
+                                  final String description =
+                                      (data['description'] as String?) ??
+                                      'No description';
+                                  final String link =
+                                      (data['link'] as String?) ?? '';
+                                  final String image =
+                                      (data['image'] as String?) ?? '';
+                                  final String storagePath =
+                                      (data['storagePath'] as String?) ?? '';
                                   // categoryId and categoryName are not stored on collectionGroup docs reliably,
                                   // attempt to read if present
-                                  final parentCategoryRef = d.reference.parent.parent;
+                                  final parentCategoryRef =
+                                      d.reference.parent.parent;
                                   if (parentCategoryRef != null) {
-                                    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                                    return FutureBuilder<
+                                      DocumentSnapshot<Map<String, dynamic>>
+                                    >(
                                       future: parentCategoryRef.get(),
                                       builder: (context, catSnap) {
-                                        String categoryId = parentCategoryRef.id;
+                                        String categoryId =
+                                            parentCategoryRef.id;
                                         String categoryName = 'Uncategorized';
                                         Color categoryColor = Colors.grey;
-                                        if (catSnap.hasData && catSnap.data!.exists) {
-                                          final catData = catSnap.data!.data() ?? {};
-                                          categoryName = (catData['name'] as String?) ?? categoryName;
-                                          final int? colorValue = catData['color'];
-                                          if (colorValue != null) categoryColor = Color(colorValue);
+                                        if (catSnap.hasData &&
+                                            catSnap.data!.exists) {
+                                          final catData =
+                                              catSnap.data!.data() ?? {};
+                                          categoryName =
+                                              (catData['name'] as String?) ??
+                                              categoryName;
+                                          final int? colorValue =
+                                              catData['color'];
+                                          if (colorValue != null)
+                                            categoryColor = Color(colorValue);
                                         }
+                                        final scheme = Theme.of(
+                                          context,
+                                        ).colorScheme;
+                                        final isLight =
+                                            Theme.of(context).brightness ==
+                                            Brightness.light;
+                                        final cardBg = isLight
+                                            ? scheme
+                                                  .surfaceVariant // slightly darker than background in light
+                                            : scheme
+                                                  .surface; // slightly lighter than background in dark
                                         return ResourceCard(
                                           id: resourceId,
                                           title: title,
@@ -676,14 +725,23 @@ class HomeState extends State<Home> {
                                           categoryId: categoryId,
                                           categoryName: categoryName,
                                           categoryColor: categoryColor,
-                                          textColor: const Color.fromARGB(255, 89, 89, 89),
-                                          backgroundColor: const Color.fromARGB(255, 233, 233, 233),
+                                          textColor: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                          backgroundColor: cardBg,
                                           indicator: true,
                                         );
                                       },
                                     );
                                   }
                                   // Fallback if category reference not available
+                                  final scheme = Theme.of(context).colorScheme;
+                                  final isLight =
+                                      Theme.of(context).brightness ==
+                                      Brightness.light;
+                                  final cardBg = isLight
+                                      ? scheme.surfaceVariant
+                                      : scheme.surface;
                                   return ResourceCard(
                                     id: resourceId,
                                     title: title,
@@ -694,8 +752,10 @@ class HomeState extends State<Home> {
                                     categoryId: '',
                                     categoryName: 'Uncategorized',
                                     categoryColor: Colors.grey,
-                                    textColor: const Color.fromARGB(255, 89, 89, 89),
-                                    backgroundColor: const Color.fromARGB(255, 233, 233, 233),
+                                    textColor: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                    backgroundColor: cardBg,
                                     indicator: true,
                                   );
                                 },
@@ -732,7 +792,7 @@ class HomeState extends State<Home> {
                         ),
                       ),
                       backgroundColor: WidgetStateProperty.all(
-                        const Color.fromARGB(255, 87, 175, 161),
+                        Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     child: const Text(
