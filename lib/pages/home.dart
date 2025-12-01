@@ -37,7 +37,10 @@ class HomeState extends State<Home> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     _searchFocusNode.addListener(_onFocusChanged);
-    _loadAllResources();
+    // Defer heavy data load until after first frame to reduce jank
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadAllResources();
+    });
   }
 
   @override

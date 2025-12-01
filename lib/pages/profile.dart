@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:re_source/pages/login.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -16,6 +20,8 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String? _userEmail;
   bool _isLoading = true;
+  String? _profileImageUrl;
+  bool _uploading = false;
 
   @override
   void initState() {
@@ -31,6 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _userEmail = user.email;
         _isLoading = false;
       });
+      _loadProfileImage(user.uid);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -44,6 +51,49 @@ class _ProfilePageState extends State<ProfilePage> {
           (route) => false,
         );
       }
+    }
+  }
+
+  Future<void> _loadProfileImage(String uid) async {
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      setState(() {
+        _profileImageUrl = doc.data()?['profileImageUrl'] as String?;
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _changeProfileImage() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final picker = ImagePicker();
+      final XFile? picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
+      if (picked == null) return;
+
+      setState(() => _uploading = true);
+
+      final file = File(picked.path);
+      final storageRef = FirebaseStorage.instance.ref().child('users/${user.uid}/profile.jpg');
+      final uploadTask = await storageRef.putFile(file, SettableMetadata(contentType: 'image/jpeg'));
+      final url = await uploadTask.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'profileImageUrl': url,
+        'profileImageStoragePath': 'users/${user.uid}/profile.jpg',
+      }, SetOptions(merge: true));
+
+      setState(() {
+        _profileImageUrl = url;
+        _uploading = false;
+      });
+    } catch (e, s) {
+      await FirebaseCrashlytics.instance.recordError(e, s, reason: 'Failed to change profile image');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
+      }
+      setState(() => _uploading = false);
     }
   }
 
@@ -209,12 +259,63 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const CircleAvatar(
-                      radius: 75,
-                      backgroundColor: Colors.transparent,
-                      backgroundImage: AssetImage("assets/images/profile.png"),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 150,
+                          height: 150,
+                          child: ClipOval(
+                            child: _profileImageUrl == null || _profileImageUrl!.isEmpty
+                                ? const Image(
+                                    image: AssetImage('assets/images/profile.png'),
+                                    fit: BoxFit.cover,
+                                  )
+                                : CachedNetworkImage(
+                                    imageUrl: _profileImageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, error, stackTrace) => const Image(
+                                      image: AssetImage('assets/images/profile.png'),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 6,
+                          bottom: 6,
+                          child: GestureDetector(
+                            onTap: _uploading ? null : _changeProfileImage,
+                            child: Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: Colors.black87,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color.fromARGB(60, 0, 0, 0),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: _uploading
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Icon(Icons.photo_camera, color: Colors.white, size: 18),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 20),
                     _isLoading
                         ? const CircularProgressIndicator()
                         : Text(
