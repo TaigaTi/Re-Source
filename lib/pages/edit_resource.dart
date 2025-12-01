@@ -226,13 +226,15 @@ class _EditResourceState extends State<EditResource> {
         }
         // Only autofill description if both controller and widget.description are empty
         // Never overwrite description if widget.description is non-empty
-        if ((_descriptionController.text.isEmpty) &&
-            (widget.description == null || widget.description!.isEmpty)) {
+        if ((_descriptionController.text.isEmpty) && (widget.description == null || widget.description!.isEmpty)) {
           _descriptionController.text = metadata['description'] ?? '';
         }
+        // Prevent overwriting passed-in description
+        if (widget.description != null && widget.description!.isNotEmpty) {
+          _descriptionController.text = widget.description!;
+        }
         // Only autofill image if not already set from Firestore
-        if ((_imageUrl == null || _imageUrl!.isEmpty) &&
-            (metadata['image'] ?? '').isNotEmpty) {
+        if ((_imageUrl == null || _imageUrl!.isEmpty) && (metadata['image'] ?? '').isNotEmpty) {
           _imageUrl = metadata['image'];
           debugPrint('EditResource: imageUrl from metadata: $_imageUrl');
         }
