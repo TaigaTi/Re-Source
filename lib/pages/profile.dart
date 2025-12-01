@@ -430,183 +430,188 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 70.0, horizontal: 30.0),
-        child: Column(
-          children: [
-            const Center(
-              child: Text(
-                "Profile",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 78, 173, 162),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 30.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Center(
+                child: Text(
+                  "Profile",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 78, 173, 162),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 5),
-            Card(
-              color: Color.fromARGB(255, 233, 233, 233),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30.0,
-                  vertical: 50.0,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          width: 150,
-                          height: 150,
-                          child: ClipOval(
-                            child:
-                                _profileImageUrl == null ||
-                                    _profileImageUrl!.isEmpty
-                                ? const Image(
-                                    image: AssetImage(
-                                      'assets/images/profile.png',
-                                    ),
-                                    fit: BoxFit.cover,
-                                  )
-                                : CachedNetworkImage(
-                                    imageUrl: _profileImageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, error, stackTrace) =>
-                                        const Image(
-                                          image: AssetImage(
-                                            'assets/images/profile.png',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
-                                  ),
-                          ),
-                        ),
-                        Positioned(
-                          right: 6,
-                          bottom: 6,
-                          child: GestureDetector(
-                            onTap: _uploading ? null : _changeProfileImage,
-                            child: Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: Colors.black87,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 2,
-                                ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color.fromARGB(60, 0, 0, 0),
-                                    blurRadius: 6,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: _uploading
-                                  ? const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
+              const SizedBox(height: 12),
+              Card(
+                color: Color.fromARGB(255, 233, 233, 233),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 24.0,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 150,
+                            height: 150,
+                            child: ClipOval(
+                              child:
+                                  _profileImageUrl == null ||
+                                      _profileImageUrl!.isEmpty
+                                  ? const Image(
+                                      image: AssetImage(
+                                        'assets/images/profile.png',
                                       ),
+                                      fit: BoxFit.cover,
                                     )
-                                  : const Icon(
-                                      Icons.photo_camera,
-                                      color: Colors.white,
-                                      size: 18,
+                                  : CachedNetworkImage(
+                                      imageUrl: _profileImageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorWidget:
+                                          (context, error, stackTrace) =>
+                                              const Image(
+                                                image: AssetImage(
+                                                  'assets/images/profile.png',
+                                                ),
+                                                fit: BoxFit.cover,
+                                              ),
                                     ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    _isLoading
-                        ? const CircularProgressIndicator()
-                        : Text(
-                            _userEmail ?? 'Email not available',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
+                          Positioned(
+                            right: 6,
+                            bottom: 6,
+                            child: GestureDetector(
+                              onTap: _uploading ? null : _changeProfileImage,
+                              child: Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color.fromARGB(60, 0, 0, 0),
+                                      blurRadius: 6,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: _uploading
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.photo_camera,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                              ),
                             ),
                           ),
-                    const SizedBox(height: 70),
-                    // Change Password Button
-                    ElevatedButton(
-                      onPressed: _showChangePasswordDialog,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 35,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        minimumSize: const Size(double.infinity, 36),
+                        ],
                       ),
-                      child: const Text(
-                        'Change Password',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    // Logout Button
-                    ElevatedButton(
-                      onPressed: _logout,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade400,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 35,
-                          vertical: 12,
+                      const SizedBox(height: 20),
+                      _isLoading
+                          ? const CircularProgressIndicator()
+                          : Text(
+                              _userEmail ?? 'Email not available',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                      const SizedBox(height: 30),
+                      // Change Password Button
+                      ElevatedButton(
+                        onPressed: _showChangePasswordDialog,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 35,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          minimumSize: const Size(double.infinity, 36),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                        child: const Text(
+                          'Change Password',
+                          style: TextStyle(fontSize: 16),
                         ),
-                        minimumSize: const Size(double.infinity, 36),
                       ),
-                      child: const Text(
-                        'Logout',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    // Delete Account Button
-                    ElevatedButton(
-                      onPressed: _deleteAccount,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 35,
-                          vertical: 12,
+                      const SizedBox(height: 16),
+                      // Logout Button
+                      ElevatedButton(
+                        onPressed: _logout,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 35,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          minimumSize: const Size(double.infinity, 36),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                        child: const Text(
+                          'Logout',
+                          style: TextStyle(fontSize: 16),
                         ),
-                        minimumSize: const Size(double.infinity, 36),
                       ),
-                      child: const Text(
-                        'Delete Account',
-                        style: TextStyle(fontSize: 16),
+                      const SizedBox(height: 16),
+                      // Delete Account Button
+                      ElevatedButton(
+                        onPressed: _deleteAccount,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 35,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          minimumSize: const Size(double.infinity, 36),
+                        ),
+                        child: const Text(
+                          'Delete Account',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );

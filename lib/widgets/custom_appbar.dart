@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:re_source/pages/profile.dart';
+// Removed profile and menu imports; using theme toggle instead
+// no extra imports needed
+import 'package:re_source/app.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
@@ -17,30 +16,22 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       automaticallyImplyLeading: false,
       actions: [
-        Builder(
-          builder: (context) => Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const ProfilePage(),
-                      transitionDuration: Duration.zero,
-                      reverseTransitionDuration: Duration.zero,
-                    ),
-                  );
-                },
-                child: _ProfileAvatar(),
-              ),
-              IconButton(
-                onPressed: Scaffold.of(context).openDrawer,
-                icon: const Icon(Icons.menu),
+        IconButton(
+          tooltip: 'Toggle theme',
+          icon: ValueListenableBuilder<ThemeMode>(
+            valueListenable: appThemeMode,
+            builder: (context, mode, _) {
+              final isDark = mode == ThemeMode.dark;
+              return Icon(
+                isDark ? Icons.dark_mode : Icons.light_mode,
                 color: Colors.black87,
-              ),
-            ],
+              );
+            },
           ),
+          onPressed: () {
+            final isDark = appThemeMode.value == ThemeMode.dark;
+            appThemeMode.value = isDark ? ThemeMode.light : ThemeMode.dark;
+          },
         ),
       ],
     );
@@ -50,52 +41,4 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class _ProfileAvatar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return const CircleAvatar(
-        radius: 12,
-        backgroundColor: Colors.transparent,
-        backgroundImage: AssetImage('assets/images/profile.png'),
-      );
-    }
-
-    final docStream = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .snapshots();
-
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: docStream,
-      builder: (context, snapshot) {
-        final String? url = snapshot.hasData
-            ? (snapshot.data!.data()?['profileImageUrl'] as String?)
-            : null;
-        if (url == null || url.isEmpty) {
-          return const CircleAvatar(
-            radius: 12,
-            backgroundColor: Colors.transparent,
-            backgroundImage: AssetImage('assets/images/profile.png'),
-          );
-        }
-        // Use CachedNetworkImage widget with error handling, clipped to a circle
-        return SizedBox(
-          width: 24,
-          height: 24,
-          child: ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: url,
-              fit: BoxFit.cover,
-              errorWidget: (context, error, stackTrace) => const Image(
-                image: AssetImage('assets/images/profile.png'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
+// Removed profile avatar and menu. Replaced with theme toggle.
