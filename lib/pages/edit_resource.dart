@@ -23,6 +23,7 @@ class EditResource extends StatefulWidget {
   final String? link;
   final String? category;
   final String? description;
+  final String? image;
   final bool existingResource;
 
   const EditResource({
@@ -32,6 +33,7 @@ class EditResource extends StatefulWidget {
     this.title,
     this.category,
     this.description,
+    this.image,
     required this.existingResource,
   });
 
@@ -40,12 +42,77 @@ class EditResource extends StatefulWidget {
 }
 
 class _EditResourceState extends State<EditResource> {
-  late TextEditingController _titleController = TextEditingController(
-    text: widget.title ?? "",
-  );
-  late TextEditingController _descriptionController = TextEditingController(
-    text: widget.description ?? "",
-  );
+    Future<void> _deleteResource() async {
+      final FirebaseFirestore database = FirebaseFirestore.instance;
+      final FirebaseAuth auth = FirebaseAuth.instance;
+      final FirebaseStorage storage = FirebaseStorage.instance;
+      final User? user = auth.currentUser;
+      if (user == null || widget.resourceId == null || widget.resourceId!.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User or resource ID missing.')),
+          );
+        }
+        return;
+      }
+      // Find category ID
+      String? categoryId = widget.category;
+      if (categoryId == null || categoryId.isEmpty) {
+        // Try to find from Firestore
+        final userCategoriesRef = database.collection('users').doc(user.uid).collection('categories');
+        final query = await userCategoriesRef.where('name', isEqualTo: widget.category).limit(1).get();
+        if (query.docs.isNotEmpty) {
+          categoryId = query.docs.first.id;
+        }
+      }
+      if (categoryId == null || categoryId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Category not found.')),
+          );
+        }
+        return;
+      }
+      final resourceRef = database.collection('users').doc(user.uid).collection('categories').doc(categoryId).collection('resources').doc(widget.resourceId);
+      try {
+        final resourceDoc = await resourceRef.get();
+        if (resourceDoc.exists) {
+          final data = resourceDoc.data() ?? {};
+          final String? storagePath = data['storagePath'] as String?;
+          // Delete image from Firebase Storage if storagePath exists
+          if (storagePath != null && storagePath.isNotEmpty) {
+            try {
+              await storage.ref().child(storagePath).delete();
+            } catch (e) {
+              debugPrint('Failed to delete image from storage: $e');
+            }
+          }
+          await resourceRef.delete();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Resource deleted.')),
+            );
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const SuccessPage(),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
+              ),
+            );
+          }
+        }
+      } catch (e, s) {
+        await FirebaseCrashlytics.instance.recordError(e, s, reason: 'Error deleting resource', fatal: false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete resource: $e')),
+          );
+        }
+      }
+    }
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
   String? _selectedCategory;
   List<Map<String, Object>> _categories = [];
   XFile? _pickedImageFile;
@@ -55,11 +122,16 @@ class _EditResourceState extends State<EditResource> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController();
-    _descriptionController = TextEditingController();
-
+    _titleController = TextEditingController(text: widget.title ?? "");
+    _descriptionController = TextEditingController(
+      text: widget.description ?? "",
+    );
+    _selectedCategory = widget.category;
+    _imageUrl = widget.image;
+    if (_imageUrl != null && _imageUrl!.isNotEmpty) {
+      debugPrint('EditResource: imageUrl from Firestore: $_imageUrl');
+    }
     _fetchCategories();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _populateMetadataFromUrl();
     });
@@ -152,11 +224,17 @@ class _EditResourceState extends State<EditResource> {
         if (_titleController.text.isEmpty) {
           _titleController.text = metadata['title'] ?? '';
         }
-        if (_descriptionController.text.isEmpty) {
+        // Only autofill description if both controller and widget.description are empty
+        // Never overwrite description if widget.description is non-empty
+        if ((_descriptionController.text.isEmpty) &&
+            (widget.description == null || widget.description!.isEmpty)) {
           _descriptionController.text = metadata['description'] ?? '';
         }
-        if (_imageUrl == null && (metadata['image'] ?? '').isNotEmpty) {
+        // Only autofill image if not already set from Firestore
+        if ((_imageUrl == null || _imageUrl!.isEmpty) &&
+            (metadata['image'] ?? '').isNotEmpty) {
           _imageUrl = metadata['image'];
+          debugPrint('EditResource: imageUrl from metadata: $_imageUrl');
         }
       });
     }
@@ -706,11 +784,6 @@ class _EditResourceState extends State<EditResource> {
                             : "Add Resource",
                       ),
                     ),
-                    widget.existingResource ? IconButton(
-                      icon: Icon(Icons.delete),
-                      color: Colors.red,
-                      onPressed: () {},
-                    ) : SizedBox(),
                   ],
                 ),
                 const SizedBox(height: 15),
@@ -858,21 +931,38 @@ class _EditResourceState extends State<EditResource> {
                                     File(_pickedImageFile!.path),
                                     fit: BoxFit.cover,
                                   )
-                                : (_imageUrl != null && _imageUrl!.isNotEmpty
-                                      ? Image.network(
-                                          _imageUrl!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  Image.asset(
-                                                    'assets/images/success.png',
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                        )
-                                      : Image.asset(
-                                          'assets/images/success.png',
-                                          fit: BoxFit.cover,
-                                        )),
+                                : (_imageUrl != null && _imageUrl!.startsWith('http')
+                                    ? Image.network(
+                                        _imageUrl!,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Container(
+                                            color: Colors.grey[300],
+                                            child: Center(
+                                              child: SizedBox(
+                                                width: 40,
+                                                height: 40,
+                                                child: CircularProgressIndicator(
+                                                  value: loadingProgress.expectedTotalBytes != null
+                                                      ? loadingProgress.cumulativeBytesLoaded /
+                                                          (loadingProgress.expectedTotalBytes ?? 1)
+                                                      : null,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            Image.asset(
+                                              'assets/images/success.png',
+                                              fit: BoxFit.cover,
+                                            ),
+                                      )
+                                    : Image.asset(
+                                        'assets/images/success.png',
+                                        fit: BoxFit.cover,
+                                      )),
                           ),
                         ],
                       ),

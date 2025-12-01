@@ -11,6 +11,7 @@ import 'package:re_source/pages/resource_details.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:re_source/widgets/resource_card.dart';
+import 'package:re_source/widgets/skeleton_card.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -31,6 +32,7 @@ class HomeState extends State<Home> {
   final GlobalKey _searchBarKey = GlobalKey();
 
   @override
+    bool _isLoadingResources = true; // Loading flag
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
@@ -647,10 +649,38 @@ class HomeState extends State<Home> {
                                   final String storagePath = (data['storagePath'] as String?) ?? '';
                                   // categoryId and categoryName are not stored on collectionGroup docs reliably,
                                   // attempt to read if present
-                                  final String categoryId = d.reference.parent.parent?.id ?? '';
-                                  final String categoryName = '';
-                                  final Color categoryColor = Colors.grey;
-
+                                  final parentCategoryRef = d.reference.parent.parent;
+                                  if (parentCategoryRef != null) {
+                                    return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                                      future: parentCategoryRef.get(),
+                                      builder: (context, catSnap) {
+                                        String categoryId = parentCategoryRef.id;
+                                        String categoryName = 'Uncategorized';
+                                        Color categoryColor = Colors.grey;
+                                        if (catSnap.hasData && catSnap.data!.exists) {
+                                          final catData = catSnap.data!.data() ?? {};
+                                          categoryName = (catData['name'] as String?) ?? categoryName;
+                                          final int? colorValue = catData['color'];
+                                          if (colorValue != null) categoryColor = Color(colorValue);
+                                        }
+                                        return ResourceCard(
+                                          id: resourceId,
+                                          title: title,
+                                          description: description,
+                                          link: link,
+                                          image: image,
+                                          storagePath: storagePath,
+                                          categoryId: categoryId,
+                                          categoryName: categoryName,
+                                          categoryColor: categoryColor,
+                                          textColor: const Color.fromARGB(255, 89, 89, 89),
+                                          backgroundColor: const Color.fromARGB(255, 233, 233, 233),
+                                          indicator: true,
+                                        );
+                                      },
+                                    );
+                                  }
+                                  // Fallback if category reference not available
                                   return ResourceCard(
                                     id: resourceId,
                                     title: title,
@@ -658,9 +688,9 @@ class HomeState extends State<Home> {
                                     link: link,
                                     image: image,
                                     storagePath: storagePath,
-                                    categoryId: categoryId,
-                                    categoryName: categoryName,
-                                    categoryColor: categoryColor,
+                                    categoryId: '',
+                                    categoryName: 'Uncategorized',
+                                    categoryColor: Colors.grey,
                                     textColor: const Color.fromARGB(255, 89, 89, 89),
                                     backgroundColor: const Color.fromARGB(255, 233, 233, 233),
                                     indicator: true,

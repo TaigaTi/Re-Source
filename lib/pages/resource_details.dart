@@ -233,6 +233,7 @@ class ResourceDetails extends StatelessWidget {
                               title: title,
                               description: description,
                               category: categoryName,
+                              image: image, // Pass image from Firestore
                               existingResource: true,
                             ),
                         transitionDuration: Duration.zero,
