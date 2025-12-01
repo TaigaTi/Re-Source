@@ -56,7 +56,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _loadProfileImage(String uid) async {
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
       setState(() {
         _profileImageUrl = doc.data()?['profileImageUrl'] as String?;
       });
@@ -69,14 +72,24 @@ class _ProfilePageState extends State<ProfilePage> {
 
     try {
       final picker = ImagePicker();
-      final XFile? picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85);
+      final XFile? picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
       if (picked == null) return;
 
       setState(() => _uploading = true);
 
       final file = File(picked.path);
-      final storageRef = FirebaseStorage.instance.ref().child('users/${user.uid}/profile.jpg');
-      final uploadTask = await storageRef.putFile(file, SettableMetadata(contentType: 'image/jpeg'));
+      final storageRef = FirebaseStorage.instance.ref().child(
+        'users/${user.uid}/profile.jpg',
+      );
+      final uploadTask = await storageRef.putFile(
+        file,
+        SettableMetadata(contentType: 'image/jpeg'),
+      );
       final url = await uploadTask.ref.getDownloadURL();
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
@@ -89,9 +102,15 @@ class _ProfilePageState extends State<ProfilePage> {
         _uploading = false;
       });
     } catch (e, s) {
-      await FirebaseCrashlytics.instance.recordError(e, s, reason: 'Failed to change profile image');
+      await FirebaseCrashlytics.instance.recordError(
+        e,
+        s,
+        reason: 'Failed to change profile image',
+      );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
       }
       setState(() => _uploading = false);
     }
@@ -122,6 +141,180 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   bool _isDeleting = false;
+  bool _isChangingPassword = false;
+
+  Future<void> _showChangePasswordDialog() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || !mounted) return;
+
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
+    String? errorText;
+
+    bool? confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text('Change Password'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: currentController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Current Password',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: newController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'New Password',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: confirmController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Confirm New Password',
+                      ),
+                    ),
+                    if (errorText != null) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        errorText!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: _isChangingPassword
+                      ? null
+                      : () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                _isChangingPassword
+                    ? const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : TextButton(
+                        onPressed: () async {
+                          final current = currentController.text.trim();
+                          final next = newController.text.trim();
+                          final confirm = confirmController.text.trim();
+
+                          if (current.isEmpty ||
+                              next.isEmpty ||
+                              confirm.isEmpty) {
+                            setState(() {
+                              errorText = 'Please fill in all fields.';
+                            });
+                            return;
+                          }
+                          if (next.length < 6) {
+                            setState(() {
+                              errorText =
+                                  'New password must be at least 6 characters.';
+                            });
+                            return;
+                          }
+                          if (next != confirm) {
+                            setState(() {
+                              errorText = 'New passwords do not match.';
+                            });
+                            return;
+                          }
+
+                          setState(() => _isChangingPassword = true);
+                          try {
+                            final email = user.email;
+                            if (email == null) {
+                              throw FirebaseAuthException(
+                                code: 'no-email',
+                                message: 'User email not available.',
+                              );
+                            }
+
+                            final credential = EmailAuthProvider.credential(
+                              email: email,
+                              password: current,
+                            );
+                            await user.reauthenticateWithCredential(credential);
+                            await user.updatePassword(next);
+
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Password updated successfully.',
+                                  ),
+                                ),
+                              );
+                            }
+                            // Close dialog
+                            // ignore: use_build_context_synchronously
+                            Navigator.of(ctx).pop(true);
+                          } on FirebaseAuthException catch (e, s) {
+                            FirebaseCrashlytics.instance.recordError(
+                              e,
+                              s,
+                              reason: 'Change password failed',
+                            );
+                            String message = 'Failed to change password.';
+                            if (e.code == 'wrong-password') {
+                              message = 'Current password is incorrect.';
+                            } else if (e.code == 'weak-password') {
+                              message = 'New password is too weak.';
+                            } else if (e.code == 'requires-recent-login') {
+                              message = 'Please log in again and retry.';
+                            }
+                            setState(() {
+                              errorText = message;
+                              _isChangingPassword = false;
+                            });
+                          } catch (e, s) {
+                            FirebaseCrashlytics.instance.recordError(
+                              e,
+                              s,
+                              reason: 'Change password unexpected error',
+                            );
+                            setState(() {
+                              errorText =
+                                  'Unexpected error occurred. Please try again.';
+                              _isChangingPassword = false;
+                            });
+                          }
+                        },
+                        child: const Text('Update'),
+                      ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      setState(() => _isChangingPassword = false);
+    }
+  }
 
   Future<void> deleteUserData(String userId) async {
     final db = FirebaseFirestore.instance;
@@ -255,7 +448,10 @@ class _ProfilePageState extends State<ProfilePage> {
             Card(
               color: Color.fromARGB(255, 233, 233, 233),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 50.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30.0,
+                  vertical: 50.0,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -266,18 +462,25 @@ class _ProfilePageState extends State<ProfilePage> {
                           width: 150,
                           height: 150,
                           child: ClipOval(
-                            child: _profileImageUrl == null || _profileImageUrl!.isEmpty
+                            child:
+                                _profileImageUrl == null ||
+                                    _profileImageUrl!.isEmpty
                                 ? const Image(
-                                    image: AssetImage('assets/images/profile.png'),
+                                    image: AssetImage(
+                                      'assets/images/profile.png',
+                                    ),
                                     fit: BoxFit.cover,
                                   )
                                 : CachedNetworkImage(
                                     imageUrl: _profileImageUrl!,
                                     fit: BoxFit.cover,
-                                    errorWidget: (context, error, stackTrace) => const Image(
-                                      image: AssetImage('assets/images/profile.png'),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    errorWidget: (context, error, stackTrace) =>
+                                        const Image(
+                                          image: AssetImage(
+                                            'assets/images/profile.png',
+                                          ),
+                                          fit: BoxFit.cover,
+                                        ),
                                   ),
                           ),
                         ),
@@ -292,7 +495,10 @@ class _ProfilePageState extends State<ProfilePage> {
                               decoration: BoxDecoration(
                                 color: Colors.black87,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                                 boxShadow: const [
                                   BoxShadow(
                                     color: Color.fromARGB(60, 0, 0, 0),
@@ -306,10 +512,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                       padding: EdgeInsets.all(8.0),
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
                                       ),
                                     )
-                                  : const Icon(Icons.photo_camera, color: Colors.white, size: 18),
+                                  : const Icon(
+                                      Icons.photo_camera,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
                             ),
                           ),
                         ),
@@ -327,6 +540,27 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                     const SizedBox(height: 70),
+                    // Change Password Button
+                    ElevatedButton(
+                      onPressed: _showChangePasswordDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueGrey.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 35,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        minimumSize: const Size(double.infinity, 36),
+                      ),
+                      child: const Text(
+                        'Change Password',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 25),
                     // Logout Button
                     ElevatedButton(
                       onPressed: _logout,
