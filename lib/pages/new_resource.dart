@@ -28,8 +28,11 @@ class _NewResourceState extends State<NewResource> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: SafeArea(
@@ -41,7 +44,9 @@ class _NewResourceState extends State<NewResource> {
                 const BackTitle(title: "Add Resource"),
                 const SizedBox(height: 15),
                 Card(
-                  color: const Color.fromARGB(255, 233, 233, 233),
+                  color: isDark
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : theme.colorScheme.surface,
                   child: SizedBox(
                     width: double.infinity,
                     child: Container(
@@ -77,10 +82,12 @@ class _NewResourceState extends State<NewResource> {
                           const SizedBox(height: 10),
                           TextField(
                             controller:
-                                _linkInputController, 
+                                _linkInputController,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: isDark
+                                  ? theme.colorScheme.surfaceContainer
+                                  : Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -112,7 +119,7 @@ class _NewResourceState extends State<NewResource> {
                   onPressed: () {
                     final String? link =
                         _linkInputController.text.trim().isEmpty
-                        ? null 
+                        ? null
                         : _linkInputController.text.trim();
 
                     if (link == null || link.isEmpty) {
@@ -144,7 +151,7 @@ class _NewResourceState extends State<NewResource> {
                       ),
                     ),
                     backgroundColor: WidgetStateProperty.all(
-                      const Color.fromARGB(255, 87, 175, 161),
+                      theme.colorScheme.primary,
                     ),
                   ),
                   child: const Text("Next", style: TextStyle(fontSize: 16)),

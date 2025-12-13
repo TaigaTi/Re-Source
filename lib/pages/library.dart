@@ -143,14 +143,17 @@ class LibraryState extends State<Library> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         children: [
           Container(
-            color: Theme.of(context).colorScheme.background,
+            color: theme.scaffoldBackgroundColor,
             padding: const EdgeInsets.fromLTRB(30, 20, 30, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,9 +240,10 @@ class LibraryState extends State<Library> {
             ),
           ),
         ],
+        ),
       ),
       bottomNavigationBar: Container(
-        color: Theme.of(context).colorScheme.background,
+        color: theme.scaffoldBackgroundColor,
         padding: const EdgeInsets.fromLTRB(30.0, 40.0, 30.0, 50.0),
         child: SafeArea(
           top: false,

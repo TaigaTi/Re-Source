@@ -11,7 +11,6 @@ import 'package:re_source/pages/resource_details.dart';
 import 'package:re_source/widgets/custom_appbar.dart';
 import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:re_source/widgets/resource_card.dart';
-import 'package:re_source/widgets/skeleton_card.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -194,10 +193,10 @@ class HomeState extends State<Home> {
                   // Title
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -426,6 +425,7 @@ class HomeState extends State<Home> {
       final String categoryName = resource['categoryName'] as String;
       final Color categoryColor = resource['categoryColor'] as Color;
 
+      final theme = Theme.of(context);
       return ResourceCard(
         id: resourceId,
         title: title,
@@ -435,8 +435,8 @@ class HomeState extends State<Home> {
         categoryId: categoryId,
         categoryName: categoryName,
         categoryColor: categoryColor,
-        textColor: const Color.fromARGB(255, 89, 89, 89),
-        backgroundColor: Color.fromARGB(255, 233, 233, 233),
+        textColor: theme.colorScheme.onSurface,
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
         indicator: true,
       );
     }).toList();
@@ -444,8 +444,11 @@ class HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: SafeArea(
@@ -474,7 +477,9 @@ class HomeState extends State<Home> {
                     ),
                   ),
                   backgroundColor: WidgetStateProperty.all(
-                    Theme.of(context).colorScheme.surfaceVariant,
+                    isDark
+                        ? theme.colorScheme.surfaceContainer
+                        : theme.colorScheme.surfaceContainerHighest,
                   ),
                   padding: WidgetStateProperty.all(
                     const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
@@ -707,14 +712,6 @@ class HomeState extends State<Home> {
                                         final scheme = Theme.of(
                                           context,
                                         ).colorScheme;
-                                        final isLight =
-                                            Theme.of(context).brightness ==
-                                            Brightness.light;
-                                        final cardBg = isLight
-                                            ? scheme
-                                                  .surfaceVariant // slightly darker than background in light
-                                            : scheme
-                                                  .surface; // slightly lighter than background in dark
                                         return ResourceCard(
                                           id: resourceId,
                                           title: title,
@@ -725,10 +722,8 @@ class HomeState extends State<Home> {
                                           categoryId: categoryId,
                                           categoryName: categoryName,
                                           categoryColor: categoryColor,
-                                          textColor: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                          backgroundColor: cardBg,
+                                          textColor: scheme.onSurface,
+                                          backgroundColor: scheme.surfaceContainerHighest,
                                           indicator: true,
                                         );
                                       },
@@ -736,12 +731,6 @@ class HomeState extends State<Home> {
                                   }
                                   // Fallback if category reference not available
                                   final scheme = Theme.of(context).colorScheme;
-                                  final isLight =
-                                      Theme.of(context).brightness ==
-                                      Brightness.light;
-                                  final cardBg = isLight
-                                      ? scheme.surfaceVariant
-                                      : scheme.surface;
                                   return ResourceCard(
                                     id: resourceId,
                                     title: title,
@@ -752,10 +741,8 @@ class HomeState extends State<Home> {
                                     categoryId: '',
                                     categoryName: 'Uncategorized',
                                     categoryColor: Colors.grey,
-                                    textColor: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                    backgroundColor: cardBg,
+                                    textColor: scheme.onSurface,
+                                    backgroundColor: scheme.surfaceContainerHighest,
                                     indicator: true,
                                   );
                                 },
@@ -767,42 +754,42 @@ class HomeState extends State<Home> {
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: FilledButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const NewResource(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
-                    },
-                    style: ButtonStyle(
-                      minimumSize: WidgetStateProperty.all(
-                        const Size(double.infinity, 45),
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      backgroundColor: WidgetStateProperty.all(
-                        Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    child: const Text(
-                      "Add Resource",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
               ],
             ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: theme.scaffoldBackgroundColor,
+        padding: const EdgeInsets.fromLTRB(30.0, 40.0, 30.0, 50.0),
+        child: SafeArea(
+          top: false,
+          child: FilledButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const NewResource(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
+            },
+            style: ButtonStyle(
+              minimumSize: WidgetStateProperty.all(
+                const Size(double.infinity, 45),
+              ),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              backgroundColor: WidgetStateProperty.all(
+                theme.colorScheme.primary,
+              ),
+            ),
+            child: const Text("Add Resource", style: TextStyle(fontSize: 16)),
           ),
         ),
       ),

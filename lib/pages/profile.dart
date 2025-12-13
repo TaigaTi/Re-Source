@@ -453,7 +453,9 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 12),
               Card(
-                color: Theme.of(context).colorScheme.surface,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Theme.of(context).colorScheme.surfaceContainerHighest
+                    : Theme.of(context).colorScheme.surface,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24.0,

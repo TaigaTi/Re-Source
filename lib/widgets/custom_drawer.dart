@@ -20,12 +20,13 @@ class CustomDrawer extends StatelessWidget {
           ListTile(
             title: const Text('Home'),
             onTap: () => {
-              Navigator.push(
+              Navigator.pop(context), // Close drawer first
+              Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const Home(),
-                  transitionDuration: Duration.zero, // 👈 No animation
+                  transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),
               ),
@@ -34,12 +35,13 @@ class CustomDrawer extends StatelessWidget {
           ListTile(
             title: const Text('Library'),
             onTap: () => {
-              Navigator.push(
+              Navigator.pop(context), // Close drawer first
+              Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const Library(),
-                  transitionDuration: Duration.zero, // 👈 No animation
+                  transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),
               ),
@@ -48,12 +50,13 @@ class CustomDrawer extends StatelessWidget {
           ListTile(
             title: const Text('Profile'),
             onTap: () => {
-              Navigator.push(
+              Navigator.pop(context), // Close drawer first
+              Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const ProfilePage(),
-                  transitionDuration: Duration.zero, // 👈 No animation
+                  transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),
               ),

@@ -39,13 +39,12 @@ class ResourceDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isLight = cs.brightness == Brightness.light;
-    final cardColor = isLight ? cs.surfaceVariant : cs.surface;
+    final cardColor = cs.surfaceContainerHighest;
 
     return Scaffold(
       appBar: const CustomAppBar(),
       drawer: const CustomDrawer(),
-      backgroundColor: cs.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

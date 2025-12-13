@@ -36,7 +36,13 @@ class MyApp extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 36),
               ),
             ),
-            cardTheme: const CardThemeData(elevation: 0),
+            cardTheme: CardThemeData(
+              elevation: 0,
+              color: ColorScheme.fromSeed(
+                seedColor: Colors.teal,
+                brightness: Brightness.light,
+              ).surfaceContainerHighest,
+            ),
           ),
           darkTheme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
@@ -54,7 +60,13 @@ class MyApp extends StatelessWidget {
                 minimumSize: const Size(double.infinity, 36),
               ),
             ),
-            cardTheme: const CardThemeData(elevation: 0),
+            cardTheme: CardThemeData(
+              elevation: 2,
+              color: ColorScheme.fromSeed(
+                seedColor: Colors.teal,
+                brightness: Brightness.dark,
+              ).surfaceContainerHigh,
+            ),
           ),
           themeMode: mode,
           home: FirebaseAuth.instance.currentUser == null

@@ -17,6 +17,12 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _errorMessage;
+  bool _isLoading = false;
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
 
   Future<UserCredential?> signInWithEmailAndPassword(
     String email,
@@ -47,8 +53,11 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -61,13 +70,15 @@ class _LoginState extends State<Login> {
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: const Color.fromARGB(255, 78, 173, 162),
+                      color: theme.colorScheme.primary,
                     ),
                   ),
                 ),
                 SizedBox(height: 8),
                 Card(
-                  color: const Color.fromARGB(255, 233, 233, 233),
+                  color: isDark
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : const Color.fromARGB(255, 233, 233, 233),
                   child: SizedBox(
                     width: double.infinity,
                     child: Container(
@@ -97,6 +108,7 @@ class _LoginState extends State<Login> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -106,7 +118,9 @@ class _LoginState extends State<Login> {
                             controller: _emailController,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: isDark
+                                  ? theme.colorScheme.surfaceContainer
+                                  : Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -136,6 +150,7 @@ class _LoginState extends State<Login> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -145,7 +160,9 @@ class _LoginState extends State<Login> {
                             controller: _passwordController,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: isDark
+                                  ? theme.colorScheme.surfaceContainer
+                                  : Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -176,15 +193,41 @@ class _LoginState extends State<Login> {
                           ],
                           SizedBox(height: 40),
                           FilledButton(
-                            onPressed: () async {
+                            onPressed: _isLoading ? null : () async {
                               setState(() {
                                 _errorMessage = null;
+                                _isLoading = true;
                               });
+
+                              final email = _emailController.text.trim();
+                              final password = _passwordController.text.trim();
+
+                              if (email.isEmpty || password.isEmpty) {
+                                setState(() {
+                                  _errorMessage = "Please fill in all fields.";
+                                  _isLoading = false;
+                                });
+                                return;
+                              }
+
+                              if (!_isValidEmail(email)) {
+                                setState(() {
+                                  _errorMessage = "Please enter a valid email address.";
+                                  _isLoading = false;
+                                });
+                                return;
+                              }
+
+                              if (password.length < 6) {
+                                setState(() {
+                                  _errorMessage = "Password must be at least 6 characters.";
+                                  _isLoading = false;
+                                });
+                                return;
+                              }
+
                               try {
-                                await signInWithEmailAndPassword(
-                                  _emailController.text.trim(),
-                                  _passwordController.text.trim(),
-                                );
+                                await signInWithEmailAndPassword(email, password);
                                 if (mounted) {
                                   Navigator.pushReplacement(
                                     this.context,
@@ -203,11 +246,13 @@ class _LoginState extends State<Login> {
                               } on FirebaseAuthException catch (e) {
                                 setState(() {
                                   _errorMessage = e.message;
+                                  _isLoading = false;
                                 });
                               } catch (e) {
                                 setState(() {
                                   _errorMessage =
                                       "An error occurred. Please try again.";
+                                  _isLoading = false;
                                 });
                               }
                             },
@@ -221,13 +266,24 @@ class _LoginState extends State<Login> {
                                 ),
                               ),
                               backgroundColor: WidgetStateProperty.all(
-                                const Color.fromARGB(255, 87, 175, 161),
+                                theme.colorScheme.primary,
                               ),
                             ),
-                            child: Text(
-                              "Log In",
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            child: _isLoading
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        theme.colorScheme.onPrimary,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    "Log In",
+                                    style: TextStyle(fontSize: 16),
+                                  ),
                           ),
                           Center(
                             child: TextButton(
@@ -253,18 +309,18 @@ class _LoginState extends State<Login> {
                               },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
-                                children: const [
+                                children: [
                                   Text(
                                     "Don't have an account? ",
                                     style: TextStyle(
-                                      color: Color.fromARGB(255, 98, 98, 98),
+                                      color: theme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                   Text(
                                     "Sign Up!",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Color.fromARGB(255, 87, 175, 161),
+                                      color: theme.colorScheme.primary,
                                     ),
                                   ),
                                 ],

@@ -792,13 +792,13 @@ class _EditResourceState extends State<EditResource> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isLight = cs.brightness == Brightness.light;
-    final cardColor = isLight ? cs.surfaceVariant : cs.surface;
-    final inputFill = cs.surface;
+    final isDark = cs.brightness == Brightness.dark;
+    final cardColor = cs.surfaceContainerHighest;
+    final inputFill = isDark ? cs.surfaceContainer : Colors.white;
     final inputTextColor = theme.textTheme.bodyMedium?.color ?? cs.onSurface;
 
     return Scaffold(
-      backgroundColor: cs.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: SafeArea(
@@ -955,7 +955,7 @@ class _EditResourceState extends State<EditResource> {
                                             if (loadingProgress == null)
                                               return child;
                                             return Container(
-                                              color: cs.surfaceVariant,
+                                              color: cs.surfaceContainerHighest,
                                               child: Center(
                                                 child: SizedBox(
                                                   width: 40,

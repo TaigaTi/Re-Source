@@ -37,8 +37,7 @@ class ResourceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isLight = cs.brightness == Brightness.light;
-    final defaultCardColor = isLight ? cs.surfaceContainerHighest : cs.surfaceContainerHigh;
+    final defaultCardColor = theme.cardTheme.color ?? cs.surface;
     final defaultTextColor = theme.textTheme.bodyMedium?.color ?? cs.onSurface;
     return InkWell(
       onTap: () async {
@@ -70,7 +69,6 @@ class ResourceCard extends StatelessWidget {
         );
       },
       child: Card(
-        elevation: isLight ? 0 : 2,
         color: backgroundColor ?? categoryColor ?? defaultCardColor,
         child: SizedBox(
           width: double.infinity,

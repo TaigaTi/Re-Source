@@ -11,12 +11,12 @@ class SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final isLight = cs.brightness == Brightness.light;
-    final cardColor = isLight ? cs.surfaceContainerHighest : cs.surfaceContainerLow;
+    final cardColor = theme.cardTheme.color ?? cs.surface;
     final blockColor = isLight ? cs.surfaceContainerHigh : cs.surfaceContainer;
     return Card(
-      elevation: isLight ? 0 : 2,
       color: cardColor,
       child: SizedBox(
         width: width,

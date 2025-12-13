@@ -18,6 +18,12 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   String? _errorMessage;
+  bool _isLoading = false;
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
 
   Future<void> addUser(String uid, String email) async {
     final FirebaseFirestore database = FirebaseFirestore.instance;
@@ -58,6 +64,7 @@ class _SignUpState extends State<SignUp> {
       );
       setState(() {
         _errorMessage = e.message;
+        _isLoading = false;
       });
     } catch (e, stack) {
       await FirebaseCrashlytics.instance.recordError(
@@ -67,14 +74,18 @@ class _SignUpState extends State<SignUp> {
       );
       setState(() {
         _errorMessage = "An error occurred. Please try again.";
+        _isLoading = false;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -87,13 +98,15 @@ class _SignUpState extends State<SignUp> {
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: const Color.fromARGB(255, 78, 173, 162),
+                      color: theme.colorScheme.primary,
                     ),
                   ),
                 ),
                 SizedBox(height: 8),
                 Card(
-                  color: const Color.fromARGB(255, 233, 233, 233),
+                  color: isDark
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : const Color.fromARGB(255, 233, 233, 233),
                   child: SizedBox(
                     width: double.infinity,
                     child: Container(
@@ -123,6 +136,7 @@ class _SignUpState extends State<SignUp> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -132,7 +146,9 @@ class _SignUpState extends State<SignUp> {
                             controller: _emailController,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: isDark
+                                  ? theme.colorScheme.surfaceContainer
+                                  : Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -162,6 +178,7 @@ class _SignUpState extends State<SignUp> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -171,7 +188,9 @@ class _SignUpState extends State<SignUp> {
                             controller: _passwordController,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: isDark
+                                  ? theme.colorScheme.surfaceContainer
+                                  : Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -202,6 +221,7 @@ class _SignUpState extends State<SignUp> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -211,7 +231,9 @@ class _SignUpState extends State<SignUp> {
                             controller: _confirmPasswordController,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: isDark
+                                  ? theme.colorScheme.surfaceContainer
+                                  : Colors.white,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
@@ -242,21 +264,49 @@ class _SignUpState extends State<SignUp> {
                           ],
                           SizedBox(height: 25),
                           FilledButton(
-                            onPressed: () async {
+                            onPressed: _isLoading ? null : () async {
                               setState(() {
                                 _errorMessage = null;
+                                _isLoading = true;
                               });
-                              if (_passwordController.text !=
-                                  _confirmPasswordController.text) {
+
+                              final email = _emailController.text.trim();
+                              final password = _passwordController.text.trim();
+                              final confirmPassword = _confirmPasswordController.text.trim();
+
+                              if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
                                 setState(() {
-                                  _errorMessage = "Passwords do not match.";
+                                  _errorMessage = "Please fill in all fields.";
+                                  _isLoading = false;
                                 });
                                 return;
                               }
-                              await signUpWithEmailAndPassword(
-                                _emailController.text.trim(),
-                                _passwordController.text.trim(),
-                              );
+
+                              if (!_isValidEmail(email)) {
+                                setState(() {
+                                  _errorMessage = "Please enter a valid email address.";
+                                  _isLoading = false;
+                                });
+                                return;
+                              }
+
+                              if (password.length < 6) {
+                                setState(() {
+                                  _errorMessage = "Password must be at least 6 characters.";
+                                  _isLoading = false;
+                                });
+                                return;
+                              }
+
+                              if (password != confirmPassword) {
+                                setState(() {
+                                  _errorMessage = "Passwords do not match.";
+                                  _isLoading = false;
+                                });
+                                return;
+                              }
+
+                              await signUpWithEmailAndPassword(email, password);
                             },
                             style: ButtonStyle(
                               minimumSize: WidgetStateProperty.all(
@@ -268,13 +318,24 @@ class _SignUpState extends State<SignUp> {
                                 ),
                               ),
                               backgroundColor: WidgetStateProperty.all(
-                                const Color.fromARGB(255, 87, 175, 161),
+                                theme.colorScheme.primary,
                               ),
                             ),
-                            child: Text(
-                              "Sign Up",
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            child: _isLoading
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        theme.colorScheme.onPrimary,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    "Sign Up",
+                                    style: TextStyle(fontSize: 16),
+                                  ),
                           ),
                           Center(
                             child: TextButton(
@@ -300,18 +361,18 @@ class _SignUpState extends State<SignUp> {
                               },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
-                                children: const [
+                                children: [
                                   Text(
                                     "Already have an account? ",
                                     style: TextStyle(
-                                      color: Color.fromARGB(255, 98, 98, 98),
+                                      color: theme.colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                   Text(
                                     "Log In!",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Color.fromARGB(255, 87, 175, 161),
+                                      color: theme.colorScheme.primary,
                                     ),
                                   ),
                                 ],

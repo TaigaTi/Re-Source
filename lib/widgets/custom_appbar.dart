@@ -8,12 +8,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return AppBar(
       title: const Image(
         image: AssetImage("assets/images/logo-horizontal.png"),
         width: 60,
       ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: isDark
+          ? theme.colorScheme.surfaceContainerHighest
+          : theme.colorScheme.surface,
       automaticallyImplyLeading: false,
       actions: [
         IconButton(

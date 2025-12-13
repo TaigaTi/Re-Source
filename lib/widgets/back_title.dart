@@ -12,10 +12,10 @@ class BackTitle extends StatelessWidget {
           onTap: () {
             Navigator.of(context).pop();
           },
-          child: const Icon(
+          child: Icon(
             Icons.chevron_left,
             size: 25,
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(width: 5),

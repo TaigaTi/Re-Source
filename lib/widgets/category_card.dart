@@ -12,7 +12,7 @@ class CategoryCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isLight = cs.brightness == Brightness.light;
-    final cardColor = isLight ? cs.surfaceContainerHighest : cs.surfaceContainerHigh;
+    final cardColor = theme.cardTheme.color ?? cs.surface;
     final textColor = theme.textTheme.bodyMedium?.color ?? cs.onSurface;
     final secondaryText = cs.onSurfaceVariant;
 

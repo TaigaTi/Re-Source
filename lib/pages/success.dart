@@ -9,8 +9,11 @@ class SuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CustomAppBar(),
       drawer: CustomDrawer(),
       body: SafeArea(
@@ -23,7 +26,9 @@ class SuccessPage extends StatelessWidget {
             child: Column(
               children: [
                 Card(
-                  color: const Color.fromARGB(255, 233, 233, 233),
+                  color: isDark
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : const Color.fromARGB(255, 233, 233, 233),
                   elevation: 2.0,
                   child: Padding(
                     padding: const EdgeInsets.all(30.0),
@@ -36,7 +41,7 @@ class SuccessPage extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: const Color.fromARGB(255, 78, 173, 162),
+                              color: theme.colorScheme.primary,
                             ),
                           ),
                         ),
@@ -59,7 +64,7 @@ class SuccessPage extends StatelessWidget {
                           ),
                           child: Center(
                             child: Text(
-                              "Your resource has been created successfuly!",
+                              "Your resource has been created successfully!",
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontWeight: FontWeight.w400,
@@ -76,7 +81,7 @@ class SuccessPage extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 20),
                   child: FilledButton(
                     onPressed: () => {
-                      Navigator.push(
+                      Navigator.pushAndRemoveUntil(
                         context,
                         PageRouteBuilder(
                           pageBuilder:
@@ -85,11 +90,12 @@ class SuccessPage extends StatelessWidget {
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
+                        (route) => false,
                       ),
                     },
                     style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.all(
-                        const Color.fromARGB(255, 87, 175, 161),
+                        theme.colorScheme.primary,
                       ),
                       minimumSize: WidgetStateProperty.all(
                         const Size(double.infinity, 40),
@@ -110,7 +116,7 @@ class SuccessPage extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10),
                   child: FilledButton(
                     onPressed: () => {
-                      Navigator.push(
+                      Navigator.pushAndRemoveUntil(
                         context,
                         PageRouteBuilder(
                           pageBuilder:
@@ -119,11 +125,14 @@ class SuccessPage extends StatelessWidget {
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
+                        (route) => false,
                       ),
                     },
                     style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.all(
-                       Color.fromARGB(255, 233, 233, 233),
+                        isDark
+                            ? theme.colorScheme.surfaceContainerHighest
+                            : const Color.fromARGB(255, 233, 233, 233),
                       ),
                       minimumSize: WidgetStateProperty.all(
                         const Size(double.infinity, 40),
@@ -134,9 +143,9 @@ class SuccessPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Add Another Resource",
-                      style: TextStyle(fontSize: 16, color: Color.fromARGB(255, 110, 110, 110)),
+                      style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurfaceVariant),
                     ),
                   ),
                 ),

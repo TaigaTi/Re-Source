@@ -97,13 +97,18 @@ class _CategoryState extends State<Category> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.of(context).pop(_modified);
-        return false;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && _modified) {
+          // The pop already happened, we just need to ensure modified state is communicated
+        }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: const CustomAppBar(),
         drawer: const CustomDrawer(),
         body: SafeArea(
@@ -120,7 +125,9 @@ class _CategoryState extends State<Category> {
                     hintText: 'Looking for something?',
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
-                    fillColor: const Color.fromRGBO(233, 233, 233, 1.0),
+                    fillColor: isDark
+                        ? theme.colorScheme.surfaceContainer
+                        : const Color.fromRGBO(233, 233, 233, 1.0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(50.0),
                       borderSide: BorderSide.none,
@@ -185,6 +192,8 @@ class _CategoryState extends State<Category> {
                               indicator: false,
                               image: resourceData['image'] ?? '',
                               storagePath: resourceData['storagePath'] ?? '',
+                              textColor: theme.colorScheme.onSurface,
+                              backgroundColor: theme.colorScheme.surfaceContainerHighest,
                               onOpen: (ctx) async {
                                 final result = await Navigator.push<bool?>(
                                   ctx,
@@ -215,29 +224,30 @@ class _CategoryState extends State<Category> {
                     },
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: FilledButton(
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const NewResource()),
-                      );
-                      await _refreshResources();
-                      _modified = true;
-                    },
-                    style: ButtonStyle(
-                      minimumSize: MaterialStateProperty.all(const Size(double.infinity, 45)),
-                      shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                      backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 87, 175, 161)),
-                    ),
-                    child: const Text(
-                      "Add Resource",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ),
               ],
+            ),
+          ),
+        ),
+        bottomNavigationBar: Container(
+          color: theme.scaffoldBackgroundColor,
+          padding: const EdgeInsets.fromLTRB(30.0, 40.0, 30.0, 50.0),
+          child: SafeArea(
+            top: false,
+            child: FilledButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NewResource()),
+                );
+                await _refreshResources();
+                _modified = true;
+              },
+              style: ButtonStyle(
+                minimumSize: WidgetStateProperty.all(const Size(double.infinity, 45)),
+                shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                backgroundColor: WidgetStateProperty.all(theme.colorScheme.primary),
+              ),
+              child: const Text("Add Resource", style: TextStyle(fontSize: 16)),
             ),
           ),
         ),
