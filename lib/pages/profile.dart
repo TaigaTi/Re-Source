@@ -483,6 +483,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                   : CachedNetworkImage(
                                       imageUrl: _profileImageUrl!,
                                       fit: BoxFit.cover,
+                                      placeholder: (context, url) =>
+                                          const Image(
+                                            image: AssetImage(
+                                              'assets/images/profile.png',
+                                            ),
+                                            fit: BoxFit.cover,
+                                          ),
                                       errorWidget:
                                           (context, error, stackTrace) =>
                                               const Image(

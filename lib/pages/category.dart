@@ -30,6 +30,28 @@ class _CategoryState extends State<Category> {
   @override
   void initState() {
     super.initState();
+    _updateCategoryLastAccessed();
+  }
+
+  Future<void> _updateCategoryLastAccessed() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || widget.id == null || widget.id!.isEmpty) return;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('categories')
+          .doc(widget.id)
+          .update({'lastAccessed': FieldValue.serverTimestamp()});
+    } catch (e, s) {
+      FirebaseCrashlytics.instance.recordError(
+        e,
+        s,
+        reason: 'Failed to update category lastAccessed',
+        fatal: false,
+      );
+    }
   }
 
   @override

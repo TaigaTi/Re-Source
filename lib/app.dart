@@ -10,6 +10,15 @@ final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier<ThemeMode>(
   ThemeMode.light,
 );
 
+// Global key to control the main navigation from other pages.
+final GlobalKey mainNavKey = GlobalKey();
+
+/// Helper to set the main navigation index from other widgets.
+void setMainNavIndex(int index) {
+  final state = mainNavKey.currentState;
+  if (state is _MainNavigationState) state.setIndex(index);
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -71,7 +80,7 @@ class MyApp extends StatelessWidget {
           themeMode: mode,
           home: FirebaseAuth.instance.currentUser == null
               ? const Login()
-              : const MainNavigation(),
+              : MainNavigation(key: mainNavKey),
         );
       },
     );
@@ -90,21 +99,39 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _pages = const [Home(), Library(), ProfilePage()];
 
+  /// Programmatically set the navigation index.
+  void setIndex(int index) {
+    if (index < 0 || index >= _pages.length) return;
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.library_books),
-            label: 'Library',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
+        body: _pages[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) => setState(() => _currentIndex = index),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.library_books),
+              label: 'Library',
+            ),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ],
+        ),
       ),
     );
   }

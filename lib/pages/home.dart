@@ -4,7 +4,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:re_source/pages/category.dart';
-import 'package:re_source/pages/library.dart';
+import 'package:re_source/app.dart';
 import 'package:re_source/pages/login.dart';
 import 'package:re_source/pages/new_resource.dart';
 import 'package:re_source/pages/resource_details.dart';
@@ -30,7 +30,6 @@ class HomeState extends State<Home> {
   OverlayEntry? _overlayEntry;
   final GlobalKey _searchBarKey = GlobalKey();
 
-  @override
   bool _isLoadingResources = true; // Loading flag
   void initState() {
     super.initState();
@@ -331,6 +330,7 @@ class HomeState extends State<Home> {
         .collection('users')
         .doc(user.uid)
         .collection('categories')
+        .orderBy('lastAccessed', descending: true)
         .get();
 
     return snapshot.docs.map((doc) {
@@ -397,8 +397,8 @@ class HomeState extends State<Home> {
     }
 
     allResourcesWithCategoryInfo.sort((a, b) {
-      final Timestamp? tsA = a['createdAt'] as Timestamp?;
-      final Timestamp? tsB = b['createdAt'] as Timestamp?;
+      final Timestamp? tsA = a['addedAt'] as Timestamp?;
+      final Timestamp? tsB = b['addedAt'] as Timestamp?;
 
       if (tsA == null && tsB == null) return 0;
       if (tsA == null) return 1;
@@ -518,16 +518,8 @@ class HomeState extends State<Home> {
                             ),
                           ),
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder:
-                                    (context, animation, secondaryAnimation) =>
-                                        const Library(),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ),
-                            );
+                            // Switch to the Library tab in the main navigation.
+                            setMainNavIndex(1);
                           },
                         ),
                       ],

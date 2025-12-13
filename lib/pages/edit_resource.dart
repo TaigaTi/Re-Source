@@ -343,6 +343,7 @@ class _EditResourceState extends State<EditResource> {
       final newCategoryDocRef = await userCategoriesRef.add({
         'name': categoryName,
         'createdAt': FieldValue.serverTimestamp(),
+        'lastAccessed': FieldValue.serverTimestamp(),
         'color': getRandomCategoryColor(),
       });
 
@@ -522,10 +523,15 @@ class _EditResourceState extends State<EditResource> {
 
       if (existingCategories.docs.isNotEmpty) {
         actualCategoryId = existingCategories.docs.first.id;
+        // Update lastAccessed for existing category
+        await userCategoriesRef
+            .doc(actualCategoryId)
+            .update({'lastAccessed': FieldValue.serverTimestamp()});
       } else {
         final newCategoryDocRef = await userCategoriesRef.add({
           'name': categoryName,
           'createdAt': FieldValue.serverTimestamp(),
+          'lastAccessed': FieldValue.serverTimestamp(),
           'color': getRandomCategoryColor(),
         });
         actualCategoryId = newCategoryDocRef.id;
@@ -668,10 +674,15 @@ class _EditResourceState extends State<EditResource> {
 
       if (newCategoryQuery.docs.isNotEmpty) {
         newCategoryId = newCategoryQuery.docs.first.id;
+        // Update lastAccessed for existing category
+        await userCategoriesRef
+            .doc(newCategoryId)
+            .update({'lastAccessed': FieldValue.serverTimestamp()});
       } else {
         final newCategoryDocRef = await userCategoriesRef.add({
           'name': categoryName,
           'createdAt': FieldValue.serverTimestamp(),
+          'lastAccessed': FieldValue.serverTimestamp(),
           'color': getRandomCategoryColor(),
         });
         newCategoryId = newCategoryDocRef.id;

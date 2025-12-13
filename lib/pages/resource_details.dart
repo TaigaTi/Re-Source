@@ -11,7 +11,7 @@ import 'package:re_source/widgets/custom_drawer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:re_source/pages/in_app_webview.dart';
 
-class ResourceDetails extends StatelessWidget {
+class ResourceDetails extends StatefulWidget {
   final String resourceId;
   final String title;
   final String description;
@@ -36,6 +36,49 @@ class ResourceDetails extends StatelessWidget {
   });
 
   @override
+  State<ResourceDetails> createState() => _ResourceDetailsState();
+}
+
+class _ResourceDetailsState extends State<ResourceDetails> {
+  @override
+  void initState() {
+    super.initState();
+    _updateLastAccessed();
+  }
+
+  Future<void> _updateLastAccessed() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || widget.categoryId.isEmpty) return;
+
+      // Update lastAccessed on the resource
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('categories')
+          .doc(widget.categoryId)
+          .collection('resources')
+          .doc(widget.resourceId)
+          .update({'lastAccessed': FieldValue.serverTimestamp()});
+
+      // Update lastAccessed on the category
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('categories')
+          .doc(widget.categoryId)
+          .update({'lastAccessed': FieldValue.serverTimestamp()});
+    } catch (e, s) {
+      FirebaseCrashlytics.instance.recordError(
+        e,
+        s,
+        reason: 'Failed to update lastAccessed',
+        fatal: false,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
@@ -54,7 +97,7 @@ class ResourceDetails extends StatelessWidget {
             ),
             child: Column(
               children: [
-                BackTitle(title: title),
+                BackTitle(title: widget.title),
                 const SizedBox(height: 30),
                 Card(
                   color: cardColor,
@@ -75,7 +118,7 @@ class ResourceDetails extends StatelessWidget {
                                 width: 9,
                                 height: 9,
                                 decoration: BoxDecoration(
-                                  color: categoryColor,
+                                  color: widget.categoryColor,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -83,7 +126,7 @@ class ResourceDetails extends StatelessWidget {
                             // Category name text
                             Flexible(
                               child: Text(
-                                categoryName,
+                                widget.categoryName,
                                 maxLines: 1,
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -101,11 +144,11 @@ class ResourceDetails extends StatelessWidget {
                           ),
                           clipBehavior: Clip.antiAlias,
                           child:
-                              (image != null &&
-                                  image!.isNotEmpty &&
-                                  !image!.startsWith('/'))
+                              (widget.image != null &&
+                                  widget.image!.isNotEmpty &&
+                                  !widget.image!.startsWith('/'))
                               ? Image.network(
-                                  image!,
+                                  widget.image!,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
@@ -121,7 +164,7 @@ class ResourceDetails extends StatelessWidget {
                                 ),
                         ),
                         const SizedBox(height: 15),
-                        Text(description, style: theme.textTheme.bodyMedium),
+                        Text(widget.description, style: theme.textTheme.bodyMedium),
                       ],
                     ),
                   ),
@@ -129,7 +172,7 @@ class ResourceDetails extends StatelessWidget {
                 const SizedBox(height: 25),
                 FilledButton.icon(
                   onPressed: () async {
-                    if (link.isEmpty) {
+                    if (widget.link.isEmpty) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -143,7 +186,7 @@ class ResourceDetails extends StatelessWidget {
                     }
 
                     // Prepare the URL. Ensure it has a scheme; prefer https when missing.
-                    String processed = link.trim();
+                    String processed = widget.link.trim();
                     if (!RegExp(
                       r'^[a-zA-Z][a-zA-Z0-9+.-]*://',
                     ).hasMatch(processed)) {
@@ -169,7 +212,7 @@ class ResourceDetails extends StatelessWidget {
                     if (uri == null) {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Invalid URL: $link')),
+                          SnackBar(content: Text('Invalid URL: ${widget.link}')),
                         );
                       }
                       return;
@@ -206,7 +249,7 @@ class ResourceDetails extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (_) => InAppWebViewPage(
                               uri: fallbackUri,
-                              title: title,
+                              title: widget.title,
                             ),
                           ),
                         );
@@ -252,12 +295,12 @@ class ResourceDetails extends StatelessWidget {
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             EditResource(
-                              resourceId: resourceId,
-                              link: link,
-                              title: title,
-                              description: description,
-                              category: categoryName,
-                              image: image, // Pass image from Firestore
+                              resourceId: widget.resourceId,
+                              link: widget.link,
+                              title: widget.title,
+                              description: widget.description,
+                              category: widget.categoryName,
+                              image: widget.image, // Pass image from Firestore
                               existingResource: true,
                             ),
                         transitionDuration: Duration.zero,
@@ -323,7 +366,7 @@ class ResourceDetails extends StatelessWidget {
                         return;
                       }
 
-                      if (categoryId.isEmpty) {
+                      if (widget.categoryId.isEmpty) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -339,17 +382,17 @@ class ResourceDetails extends StatelessWidget {
                       // Attempt to delete associated image from Firebase Storage.
                       try {
                         // Prefer deleting by stored storage path if available (more reliable)
-                        if (storagePath != null && storagePath!.isNotEmpty) {
+                        if (widget.storagePath != null && widget.storagePath!.isNotEmpty) {
                           await FirebaseStorage.instance
                               .ref()
-                              .child(storagePath!)
+                              .child(widget.storagePath!)
                               .delete();
-                        } else if (image != null &&
-                            image!.isNotEmpty &&
-                            image!.contains('firebasestorage.googleapis.com')) {
+                        } else if (widget.image != null &&
+                            widget.image!.isNotEmpty &&
+                            widget.image!.contains('firebasestorage.googleapis.com')) {
                           // Fallback: try to derive ref from download URL
                           final storageRef = FirebaseStorage.instance
-                              .refFromURL(image!);
+                              .refFromURL(widget.image!);
                           await storageRef.delete();
                         }
                       } catch (e, s) {
@@ -367,9 +410,9 @@ class ResourceDetails extends StatelessWidget {
                           .collection('users')
                           .doc(user.uid)
                           .collection('categories')
-                          .doc(categoryId)
+                          .doc(widget.categoryId)
                           .collection('resources')
-                          .doc(resourceId)
+                          .doc(widget.resourceId)
                           .delete();
 
                       if (context.mounted) {

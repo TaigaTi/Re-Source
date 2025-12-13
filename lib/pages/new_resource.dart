@@ -46,7 +46,7 @@ class _NewResourceState extends State<NewResource> {
                 Card(
                   color: isDark
                       ? theme.colorScheme.surfaceContainerHighest
-                      : theme.colorScheme.surface,
+                      : theme.colorScheme.surfaceContainerHighest,
                   child: SizedBox(
                     width: double.infinity,
                     child: Container(
@@ -86,8 +86,8 @@ class _NewResourceState extends State<NewResource> {
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: isDark
-                                  ? theme.colorScheme.surfaceContainer
-                                  : Colors.white,
+                                  ? theme.colorScheme.surfaceContainerHigh
+                                  : theme.colorScheme.surfaceContainerLowest,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
